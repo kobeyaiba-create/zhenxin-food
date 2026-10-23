@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff6a3d"/><stop offset="0.6" stop-color="#ff5a7a"/><stop offset="1" stop-color="#ffb14a"/>
+    </linearGradient>
+    <linearGradient id="bowl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ffe8dc"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <!-- steam -->
+  <g fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" opacity=".9">
+    <path d="M196 150c-20-24 20-44 0-72"/>
+    <path d="M256 140c-20-24 20-44 0-72"/>
+    <path d="M316 150c-20-24 20-44 0-72"/>
+  </g>
+  <!-- chopsticks -->
+  <g stroke="#3a2200" stroke-width="14" stroke-linecap="round">
+    <line x1="300" y1="250" x2="430" y2="118"/>
+    <line x1="322" y1="258" x2="452" y2="138"/>
+  </g>
+  <!-- noodles peeking -->
+  <path d="M130 262c40-26 80 10 126-10s86-18 126 10" fill="none" stroke="#ffd23f" stroke-width="22" stroke-linecap="round"/>
+  <!-- bowl -->
+  <path d="M96 258h320c0 98-70 168-160 168S96 356 96 258z" fill="url(#bowl)"/>
+  <rect x="96" y="246" width="320" height="26" rx="13" fill="#fff"/>
+  <path d="M206 424h100l-10 26h-80z" fill="#fff"/>
+  <!-- heart badge (真心) -->
+  <path d="M256 384c-36-26-58-46-58-70 0-16 12-28 28-28 13 0 23 8 30 18 7-10 17-18 30-18 16 0 28 12 28 28 0 24-22 44-58 70z" fill="#ff5a3c"/>
+</svg>
