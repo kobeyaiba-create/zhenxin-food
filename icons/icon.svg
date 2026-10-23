@@ -25,15 +25,26 @@
   </g>
   <path d="M300 170h140l-16 262c-1 14-12 24-26 24h-56c-14 0-25-10-26-24z" fill="none" stroke="#fff" stroke-width="10" stroke-linejoin="round"/>
   <rect x="288" y="150" width="164" height="30" rx="12" fill="#fff"/>
-  <!-- chicken cutlet (bumpy crust) sticking out of paper bag -->
-  <path d="M64 196 q-8-30 18-44 q6-28 36-28 q14-24 42-16 q24-18 48-2 q30-6 42 20 q30 4 34 34 q22 18 8 44 L260 330 L76 330 q-24-20-14-50 q-18-22 2-44 q-14-22 0-40z" fill="url(#cut)"/>
-  <path d="M64 196 q-8-30 18-44 q6-28 36-28 q14-24 42-16 q24-18 48-2 q30-6 42 20 q30 4 34 34 q22 18 8 44" fill="none" stroke="#c96f10" stroke-width="8" stroke-linecap="round"/>
-  <g fill="#fff0b8" opacity=".85">
-    <circle cx="110" cy="190" r="7"/><circle cx="150" cy="165" r="6"/><circle cx="200" cy="170" r="8"/><circle cx="235" cy="205" r="6"/>
-    <circle cx="130" cy="235" r="8"/><circle cx="180" cy="220" r="6"/><circle cx="220" cy="250" r="7"/><circle cx="100" cy="270" r="6"/><circle cx="160" cy="275" r="7"/>
-  </g>
-  <g fill="#7a3d0c" opacity=".7">
-    <circle cx="125" cy="205" r="3.5"/><circle cx="175" cy="195" r="3"/><circle cx="210" cy="225" r="3.5"/><circle cx="145" cy="255" r="3"/><circle cx="195" cy="265" r="3.5"/><circle cx="240" cy="240" r="3"/><circle cx="105" cy="240" r="3"/>
+  <!-- chicken cutlet: big flat fan shape with bite mark -->
+  <defs>
+    <radialGradient id="cut2" cx="0.4" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#ffcf5a"/><stop offset="0.65" stop-color="#e8962a"/><stop offset="1" stop-color="#b8620e"/>
+    </radialGradient>
+    <mask id="bite">
+      <rect width="512" height="512" fill="#fff"/>
+      <circle cx="262" cy="118" r="26" fill="#000"/><circle cx="286" cy="150" r="24" fill="#000"/><circle cx="246" cy="92" r="20" fill="#000"/>
+    </mask>
+  </defs>
+  <g mask="url(#bite)" transform="rotate(-8 170 230)">
+    <path d="M90 320 C60 250 70 150 130 105 C170 75 230 72 265 100 C300 130 300 200 275 260 C258 300 262 320 250 330 Z" fill="url(#cut2)"/>
+    <path d="M90 320 C60 250 70 150 130 105 C170 75 230 72 265 100 C300 130 300 200 275 260 C258 300 262 320 250 330" fill="none" stroke="#a5520b" stroke-width="7" stroke-dasharray="2 9" stroke-linecap="round"/>
+    <g fill="none" stroke="#fff1bf" stroke-width="6" stroke-linecap="round" opacity=".8">
+      <path d="M120 150 q10-8 20 0"/><path d="M170 120 q10-8 20 0"/><path d="M215 140 q10-8 20 0"/><path d="M110 210 q10-8 20 0"/><path d="M160 180 q10-8 20 0"/>
+      <path d="M210 200 q10-8 20 0"/><path d="M245 180 q8-6 16 0"/><path d="M130 260 q10-8 20 0"/><path d="M185 240 q10-8 20 0"/><path d="M230 255 q10-8 20 0"/>
+    </g>
+    <g fill="#5a2a05" opacity=".55">
+      <circle cx="140" cy="135" r="3"/><circle cx="195" cy="160" r="3"/><circle cx="125" cy="235" r="3"/><circle cx="235" cy="225" r="3"/><circle cx="175" cy="210" r="3"/><circle cx="205" cy="280" r="3"/><circle cx="150" cy="290" r="3"/><circle cx="250" cy="150" r="3"/>
+    </g>
   </g>
   <!-- paper bag -->
   <path d="M60 300 h214 l-18 160 h-178z" fill="#fff"/>
