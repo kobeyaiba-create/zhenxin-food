@@ -1,0 +1,1069 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>真心食記簿</title>
+<meta name="description" content="不看業配、只看真心評論的台中・新竹・苗栗美食清單">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: sticky filter bar over a card grid; each card is a menu slip with rating, sponsor-risk stamp, and expandable review digest */
+:root{
+  --bg:#fff6ec; --surface:#ffffff; --ink:#2b1810; --muted:#7a6359; --line:#f0dccb;
+  --accent:#ff5a3c; --accent-ink:#ffffff; --accent-soft:#ffe4dc; --mark:#ff9f1c;
+  --bowl-bg:#fff1d6; --bowl-line:#ffc86b; --bowl-ink:#8a4a00; --bowl-dot:#ff5a3c;
+  --ok:#14936f; --ok-soft:#d9f5ea; --warn:#b86e00; --warn-soft:#fff0cf; --bad:#d63a4a; --bad-soft:#ffe1e4;
+  --shadow:0 2px 0 rgba(43,24,16,.06),0 10px 24px -8px rgba(255,90,60,.18);
+  --pop:#ffd23f; --mint:#3dd6b0; --pink:#ff7aa8; --grape:#8b6cff; --sky:#4db8ff;
+  --display:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1a1210; --surface:#251a16; --ink:#fbeee6; --muted:#c3a89b; --line:#3b2a23;
+  --accent:#ff7a5c; --accent-ink:#1a0d08; --accent-soft:#3d221a; --mark:#ffb547;
+  --bowl-bg:#3a2a12; --bowl-line:#7a5420; --bowl-ink:#ffd38a; --bowl-dot:#ff8a6b;
+  --ok:#5fe0b5; --ok-soft:#143328; --warn:#ffc56b; --warn-soft:#3a2b10; --bad:#ff8a95; --bad-soft:#3d1a1f;
+  --shadow:0 2px 0 rgba(0,0,0,.3); --pop:#e8b923; --mint:#2aa98a; --pink:#d9628c; --grape:#7558e0; --sky:#3a93cc; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1a1210; --surface:#251a16; --ink:#fbeee6; --muted:#c3a89b; --line:#3b2a23;
+  --accent:#ff7a5c; --accent-ink:#1a0d08; --accent-soft:#3d221a; --mark:#ffb547;
+  --bowl-bg:#3a2a12; --bowl-line:#7a5420; --bowl-ink:#ffd38a; --bowl-dot:#ff8a6b;
+  --ok:#5fe0b5; --ok-soft:#143328; --warn:#ffc56b; --warn-soft:#3a2b10; --bad:#ff8a95; --bad-soft:#3d1a1f;
+  --shadow:0 2px 0 rgba(0,0,0,.3); --pop:#e8b923; --mint:#2aa98a; --pink:#d9628c; --grape:#7558e0; --sky:#3a93cc; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 60px}
+header.top{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px;margin-bottom:14px}
+h1{font-family:var(--display);font-size:clamp(28px,6vw,40px);margin:0;line-height:1.1;letter-spacing:.02em;text-wrap:balance}
+.sub{color:var(--muted);font-size:13px;margin:4px 0 0}
+button{font:inherit;cursor:pointer}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 14px;font-size:14px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.filters{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.scroller{display:flex;flex-wrap:wrap;gap:6px;min-width:0;flex:1}
+@media (max-width:640px){
+  .filters{position:static}
+  .search{flex:1 1 100%}
+  .row select{flex:1 1 40%}
+  .chip{padding:4px 10px;font-size:13px}
+  .lbl{width:100%;flex-basis:100%}
+}
+.scroller::-webkit-scrollbar{display:none}
+.lbl{font-size:12px;color:var(--muted);letter-spacing:.08em;flex:none;width:3.2em}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 12px;font-size:14px;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip.add{border-style:dashed;color:var(--muted)}
+.chip .x{margin-left:6px;opacity:.55;font-size:12px}
+.dish-add{display:inline-flex;gap:4px;align-items:center}
+.dish-add input{width:7.5em;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:3px 10px;font-size:13px}
+.chip .n{opacity:.6;font-size:12px;margin-left:3px;font-variant-numeric:tabular-nums}
+select,input,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 10px;min-width:0}
+.search{flex:1;min-width:160px}
+.toggle{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 10px;font-size:13px;color:var(--muted)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);min-width:0}
+.card.visited{border-color:var(--accent)}
+.c-head{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.c-name{font-family:var(--display);font-size:21px;font-weight:700;line-height:1.25;margin:0;min-width:0;overflow-wrap:anywhere}
+.c-where{font-size:13px;color:var(--muted)}
+.score{text-align:right;flex:none}
+.score b{font-size:22px;color:var(--mark);font-variant-numeric:tabular-nums;font-family:var(--display)}
+.score b.alt{color:var(--muted)}
+.score small{display:block;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-size:12px;padding:1px 8px;border-radius:6px;background:var(--accent-soft);color:var(--ink)}
+.tag.ayce{background:var(--mark);color:#1b1305;font-weight:700}
+.stamp{font-size:12px;padding:1px 8px;border-radius:6px;font-weight:700}
+.stamp.低{background:var(--ok-soft);color:var(--ok)}
+.stamp.中{background:var(--warn-soft);color:var(--warn)}
+.stamp.高{background:var(--bad-soft);color:var(--bad)}
+.verdict{font-family:var(--display);font-size:16px;margin:0}
+.price{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sig{font-size:13px}
+.sig span{color:var(--muted)}
+details{border-top:1px dashed var(--line);padding-top:8px}
+summary{cursor:pointer;font-size:13px;color:var(--accent);font-weight:500;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"＋ "}
+details[open] summary::before{content:"－ "}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+@media (max-width:420px){.pc{grid-template-columns:1fr}}
+.pc h4{margin:0 0 4px;font-size:12px;letter-spacing:.08em}
+.pc .p h4{color:var(--ok)} .pc .c h4{color:var(--bad)}
+.pc ul{margin:0;padding-left:1.1em;font-size:13px}
+.kv{font-size:13px;margin:8px 0 0;display:grid;gap:4px}
+.kv span{color:var(--muted)}
+.src a{color:var(--accent);font-size:13px;overflow-wrap:anywhere}
+.src ul{margin:4px 0 0;padding-left:1.1em}
+.menu{margin-top:8px;display:grid;gap:10px}
+.menu h5{margin:0 0 2px;font-size:12px;letter-spacing:.08em;color:var(--accent);border-bottom:1px solid var(--line);padding-bottom:2px}
+.mi{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:13px;padding:2px 0}
+.mi .nm{min-width:0;overflow-wrap:anywhere}
+.mi .pr{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.mi .pr.na{color:var(--muted)}
+.mi .nt{grid-column:1/-1;font-size:11px;color:var(--muted);margin-top:-2px}
+.mi.hit .nm{background:var(--accent-soft);border-radius:4px}
+.mnote{font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:6px 10px}
+.mbadge{font-size:11px;font-weight:400;color:var(--muted);margin-left:6px}
+.open{font-size:12px;padding:1px 8px;border-radius:6px;font-weight:700}
+.open.on{background:var(--ok-soft);color:var(--ok)}
+.open.soon{background:var(--warn-soft);color:var(--warn)}
+.open.off{background:var(--bad-soft);color:var(--bad)}
+.open.unk{background:var(--bg);color:var(--muted);font-weight:400}
+.hrs{font-size:13px;display:grid;grid-template-columns:auto 1fr;gap:1px 12px;margin-top:6px}
+.hrs .d{color:var(--muted)}
+.hrs .t{font-variant-numeric:tabular-nums}
+.hrs .closed{color:var(--bad)}
+.hrs .today{font-weight:700;color:var(--ink)}
+.closedline{font-size:13px}
+.closedline span{color:var(--muted)}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.mi .nm a{color:inherit;text-decoration:underline dotted var(--muted);text-underline-offset:3px}
+.mi .nm a:hover{color:var(--accent)}
+.mi .th{width:36px;height:36px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:6px;cursor:zoom-in;border:1px solid var(--line)}
+.strip{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;margin-inline:-2px;padding:2px}
+.strip button{flex:none;padding:0;border:none;background:none;cursor:zoom-in;border-radius:10px;overflow:hidden}
+.strip img{display:block;height:96px;width:auto;max-width:160px;object-fit:cover;border-radius:10px;background:var(--bg)}
+.ph-dlg form{padding:20px;display:grid;gap:12px}
+.ph-dlg h2{font-family:var(--display);margin:0}
+#lb{width:min(920px,calc(100vw - 24px))}
+#lb .lb-in{display:grid;gap:10px;padding:14px}
+#lb img{width:100%;max-height:70dvh;object-fit:contain;border-radius:10px;background:var(--bg)}
+#lb .cap{font-size:14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.bowl{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--bowl-ink);background:var(--bowl-bg);border:1px solid var(--bowl-line);border-radius:999px;padding:2px 10px}
+.bowl .bw{letter-spacing:1px;color:var(--bowl-dot)}
+.zone{border:1px solid var(--bowl-line);background:var(--bowl-bg);border-radius:14px;padding:14px 16px;margin-bottom:14px;display:grid;gap:4px}
+.zone h2{font-family:var(--display);margin:0;font-size:22px;color:var(--bowl-ink)}
+.zone p{margin:0;font-size:14px;max-width:65ch}
+.zone a{color:var(--accent)}
+.mine{background:var(--accent-soft);border-radius:8px;padding:6px 10px;font-size:13px}
+.c-foot{display:flex;gap:6px;margin-top:auto;flex-wrap:wrap}
+.c-foot .btn{padding:4px 12px;font-size:13px}
+.c-foot .btn.tel{background:var(--accent-soft);color:var(--accent);border-color:transparent;font-weight:600;font-variant-numeric:tabular-nums}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:48px 16px;border:1px dashed var(--line);border-radius:14px}
+.empty h2{font-family:var(--display);color:var(--ink);margin:0 0 6px}
+
+dialog{border:none;border-radius:16px;padding:0;width:min(640px,calc(100vw - 24px));max-height:calc(100dvh - 24px);background:var(--surface);color:var(--ink)}
+dialog::backdrop{background:rgba(10,20,15,.45)}
+form.ed{display:grid;gap:12px;padding:20px}
+form.ed h2{font-family:var(--display);margin:0}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:480px){.f2{grid-template-columns:1fr}}
+label.f{display:grid;gap:4px;font-size:13px;color:var(--muted);min-width:0}
+label.f input,label.f select,label.f textarea{width:100%}
+.hint{font-size:12px;color:var(--muted)}
+.actions{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;position:sticky;bottom:0;background:var(--surface);padding-top:8px}
+.confirm{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--bad);flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:14px;z-index:20}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .2s,transform .15s}}
+
+/* ---- Bento layout ---- */
+:root{--r:24px;--gap:14px;
+  --h1:#ffe9e2;--h2:#fff3cc;--h3:#e3f6ff;--h4:#ffe6f0;--h5:#ddf7ec;--h6:#ece6ff;--hk:#9a5a40}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--h1:#3a1f18;--h2:#3a3014;--h3:#16303d;--h4:#3a1a28;--h5:#163328;--h6:#271f40;--hk:#e0a98f}}
+:root[data-theme="dark"]{--h1:#3a1f18;--h2:#3a3014;--h3:#16303d;--h4:#3a1a28;--h5:#163328;--h6:#271f40;--hk:#e0a98f}
+.bento{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--gap);margin-bottom:6px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0;box-shadow:var(--shadow)}
+.tile .k{font-size:12px;letter-spacing:.12em;color:var(--hk);font-weight:700}
+.t-title{grid-column:span 4;background:var(--accent);color:var(--accent-ink);border-color:var(--accent);justify-content:space-between;min-height:150px;position:relative}
+.t-title h1{font-size:clamp(32px,6vw,52px)}
+.t-title .sub{color:inherit;opacity:.85;font-size:14px}
+.t-title .btn.primary{align-self:flex-start;background:var(--accent-ink);color:var(--accent);border-color:var(--accent-ink)}
+.t-stat{grid-column:span 1;justify-content:space-between;background:var(--h2)}
+.t-stat b{font-family:var(--display);font-size:clamp(28px,4vw,40px);line-height:1;font-variant-numeric:tabular-nums;color:var(--ink)}
+.t-stat .s{font-size:12px;color:var(--muted)}
+.t-open{background:var(--h1)}
+.linkish{background:none;border:none;padding:0;text-align:left;color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.t-where{grid-column:span 2;background:var(--h3)}
+.t-where .row select{flex:1}
+.t-where .search{width:100%;flex:none}
+.t-cat{grid-column:span 4}
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.cats .chip{border-radius:14px;padding:10px 10px 8px;text-align:left;display:flex;flex-direction:column;gap:2px;white-space:normal;font-weight:600;background:var(--bg);border-color:transparent}
+.cats .chip .n{margin:0;font-size:12px;opacity:.7;font-weight:400}
+.cats .chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.t-dish{grid-column:span 2;background:var(--h5)}
+
+.t-zone{grid-column:span 2;background:var(--h4)}
+.t-cui{grid-column:span 2;background:var(--h6)}
+.t-opt{grid-column:span 2}
+.t-opt .opts{display:flex;flex-wrap:wrap;gap:6px 14px}
+.t-opt select{align-self:flex-start}
+.tile .scroller{flex:none}
+@media (max-width:900px){
+  .bento{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .t-title,.t-where,.t-cat,.t-cui,.t-opt,.t-dish,.t-zone{grid-column:1/-1}
+  .t-title{min-height:120px}
+}
+.meta{margin:16px 0 10px}
+
+.grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));grid-auto-flow:dense;gap:var(--gap)}
+.card{border-radius:var(--r);padding:16px;gap:8px;cursor:pointer;position:relative}
+.card:hover{border-color:var(--accent)}
+.card.big{grid-column:span 2;grid-row:span 2}
+@media (max-width:600px){.card.big{grid-column:auto;grid-row:auto}}
+.card.big .c-name{font-size:26px}
+.card.big .verdict{font-size:18px}
+.card[data-tint="1"]{background:var(--h1)}.card[data-tint="2"]{background:var(--h2)}.card[data-tint="3"]{background:var(--h3)}
+.card[data-tint="4"]{background:var(--h4)}.card[data-tint="5"]{background:var(--h5)}.card[data-tint="6"]{background:var(--h6)}
+.card .cat-k{font-size:11px;letter-spacing:.14em;font-weight:700;color:var(--hk)}
+.card .verdict{font-size:15px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.card.big .verdict{-webkit-line-clamp:5}
+.card .c-foot{padding-top:4px}
+.card .hero{margin:-16px -16px 4px;height:160px;border-radius:var(--r) var(--r) 0 0;overflow:hidden;background:var(--bg)}
+.card .hero img{width:100%;height:100%;object-fit:cover;display:block}
+.card .pp{font-size:13px;margin:0;padding-left:1.1em}
+.more{display:flex;justify-content:center;margin-top:16px}
+#det{width:min(720px,calc(100vw - 24px))}
+.det-in{padding:20px;display:grid;gap:12px}
+.det-in .c-name{font-size:26px}
+.det-in .x{position:sticky;top:0;justify-self:end;margin:-8px -8px 0 0}
+.det-in details{border-top:1px solid var(--line)}
+.fab{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:15;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.fab .fb{width:52px;height:52px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.18);display:grid;place-items:center;font-size:20px;line-height:1}
+.fab .fb.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.fab .fb svg{width:22px;height:22px}
+.fab .qs{display:flex;gap:6px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px;box-shadow:0 4px 16px rgba(0,0,0,.18);width:min(360px,calc(100vw - 32px))}
+.fab .qs input{flex:1;border-radius:10px}
+.fab .qs .hit{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:no-preference){.fab .fb{transition:transform .15s,opacity .2s}.fab .fb:active{transform:scale(.94)}}
+/* ---- Foodie influencer skin ---- */
+body{background:var(--bg);background-image:radial-gradient(circle at 12% 8%,color-mix(in srgb,var(--pop) 22%,transparent) 0 120px,transparent 121px),radial-gradient(circle at 92% 30%,color-mix(in srgb,var(--pink) 16%,transparent) 0 160px,transparent 161px);background-attachment:fixed}
+h1,.c-name,.t-stat b,.det-in .c-name{font-family:var(--display);font-weight:400;letter-spacing:.01em}
+.tile{border:2px solid var(--line);box-shadow:var(--shadow)}
+.tile .k{font-size:13px;letter-spacing:.04em;color:var(--ink);font-weight:700}
+.t-title{background:linear-gradient(135deg,#ff5a3c 0%,#ff7aa8 55%,#ffb14a 100%);border:none;color:#fff;overflow:hidden;min-height:190px;justify-content:flex-end;padding:22px}
+.t-title::after{content:"🍜";position:absolute;right:-10px;bottom:-26px;font-size:150px;opacity:.22;transform:rotate(-12deg);pointer-events:none}
+.t-title h1{font-size:clamp(40px,7vw,68px);text-shadow:3px 3px 0 rgba(120,20,0,.25);line-height:1}
+.t-title .kicker{margin:0;font-size:13px;font-weight:700;letter-spacing:.12em;opacity:.95}
+.t-title .sub{opacity:1;font-size:15px;font-weight:500}
+.t-title .btn.primary{background:#fff;color:#ff5a3c;border-color:#fff;position:absolute;top:18px;right:18px}
+.sticker{position:absolute;font-family:var(--display);font-size:15px;padding:5px 12px;border-radius:12px;box-shadow:0 3px 0 rgba(0,0,0,.15);z-index:1}
+.sticker.s1{top:18px;left:22px;background:var(--pop);color:#3a2200;transform:rotate(-6deg)}
+.sticker.s2{top:22px;left:150px;background:#fff;color:#ff5a3c;transform:rotate(4deg)}
+.t-title .kicker{margin-top:44px}
+.t-stat{background:var(--pop);border:none}
+.t-stat .k,.t-stat b,.t-stat .s{color:#3a2200}
+.t-open{background:var(--mint)}
+.t-open .k,.t-open b,.t-open .linkish{color:#06352a}
+.t-stat b{font-size:clamp(34px,4.6vw,48px)}
+.cats .chip{background:var(--bg);border:2px solid transparent;font-size:14px;white-space:nowrap;border-radius:16px;padding:12px 10px 10px}
+.cats .chip:hover{border-color:var(--accent)}
+.cats .chip[aria-pressed="true"]{background:var(--accent);color:#fff;box-shadow:0 4px 0 color-mix(in srgb,var(--accent) 60%,#000)}
+.chip{border-width:2px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn{border-width:2px;font-weight:600}
+.btn.primary{box-shadow:0 3px 0 color-mix(in srgb,var(--accent) 55%,#000)}
+
+.grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr));gap:16px}
+.card.ig{padding:0;overflow:hidden;border:2px solid var(--line);background:var(--surface)!important;gap:0}
+.card.ig:hover{border-color:var(--accent);transform:translateY(-3px) rotate(-.3deg)}
+.cover{position:relative;height:130px;background:linear-gradient(135deg,var(--g1),var(--g2));overflow:hidden;flex:none}
+.card.big .cover{height:230px}
+.cover img{width:100%;height:100%;object-fit:cover;display:block}
+.cover .emo{position:absolute;font-size:72px;right:14px;bottom:-8px;transform:rotate(12deg);filter:drop-shadow(0 6px 8px rgba(0,0,0,.18))}
+.cover .emo.e2{font-size:34px;right:auto;left:42%;top:14px;bottom:auto;opacity:.55;transform:rotate(-18deg)}
+.cover .emo.e3{font-size:24px;right:auto;left:18%;bottom:10px;opacity:.4;transform:rotate(20deg)}
+.card.big .cover .emo{font-size:130px}
+.card.big .cover .emo.e2{font-size:54px}.card.big .cover .emo.e3{font-size:38px}
+.cover .catp{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.92);color:#2b1810;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px}
+.cover .rate{position:absolute;left:12px;bottom:12px;background:#2b1810;color:#ffd23f;font-family:var(--display);font-size:20px;padding:4px 12px;border-radius:14px;display:flex;align-items:baseline;gap:6px;transform:rotate(-3deg);box-shadow:0 3px 0 rgba(0,0,0,.2)}
+.cover .rate small{font-family:var(--body);font-size:11px;color:#fff;opacity:.85}
+.cover .b500{position:absolute;right:12px;top:12px;background:var(--pop);color:#3a2200;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;transform:rotate(4deg)}
+.cb{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
+.card.ig .c-name{font-size:21px;line-height:1.25}
+.card.big .c-name{font-size:28px}
+.where{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:13px;color:var(--muted);align-items:center}
+.bdg{display:flex;flex-wrap:wrap;gap:6px}
+.bd{font-size:12px;font-weight:700;padding:3px 9px;border-radius:8px;background:var(--bg);color:var(--ink)}
+.bd.closed{background:#b42318;color:#fff}
+.cwarn{background:#b42318;color:#fff;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:700}
+.card.isclosed{opacity:.82}
+.bd.up{background:#d6f5e3;color:#0b7a45}.bd.down{background:#ffe0e0;color:#c4202f;outline:2px solid #ffb3b3}
+.trend{font-size:13px;padding:8px 12px;border-radius:12px;background:var(--bg)}
+.trend.good{background:var(--ok-soft);color:var(--ok)}.trend.bad{background:var(--bad-soft);color:var(--bad)}
+.bd.viral{background:linear-gradient(90deg,#ff5a3c,#ff7aa8);color:#fff}
+.zone.viralz{background:linear-gradient(135deg,#fff0e8,#ffe6f0);border-color:#ffb3a0}.zone.viralz h2{color:#d63a1c}
+.bd.hot{background:#ffe1d6;color:#c2300f}.bd.gem{background:#e9e3ff;color:#5a3fd6}.bd.real{background:#d9f5ea;color:#0d7a5b}
+.bd.ayce{background:#fff0c2;color:#8a5a00}.bd.late{background:#dde6ff;color:#2f3f9a}.bd.cp{background:#e6f7d4;color:#3f7a12}.bd.done{background:var(--ink);color:var(--bg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .bd:not(.done){background:color-mix(in srgb,currentColor 18%,transparent);filter:brightness(1.6)}}
+:root[data-theme="dark"] .bd:not(.done){background:color-mix(in srgb,currentColor 18%,transparent);filter:brightness(1.6)}
+.verdict.q{font-size:15px;line-height:1.55;position:relative;padding-left:14px;border-left:4px solid var(--pop);font-family:var(--body)}
+.card.big .verdict.q{font-size:17px}
+.hash{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:14px;font-weight:700;color:var(--accent)}
+.risk{font-size:12px;color:var(--muted);margin-top:auto}
+.card .c-foot{padding-top:2px}
+.c-foot .btn{border-radius:999px}
+.detcover .cover{height:200px;border-radius:18px;margin-top:-6px}
+.detcover .cover .emo{font-size:120px}
+.det-in .c-name{font-size:30px}
+.meta{font-weight:500}
+
+/* ---- compact bento v2 ---- */
+.bento{grid-template-columns:2.2fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.bento .tile{grid-column:auto!important;grid-row:auto!important}
+.t-title{min-height:0!important;padding:16px 20px!important;justify-content:center!important}
+.t-title h1{font-size:clamp(30px,4.4vw,46px)!important}
+.t-title .sub{font-size:13px!important;margin:2px 0 0}
+.t-title::after{font-size:96px!important;bottom:-18px!important}
+.sticker{font-size:12px!important;padding:3px 9px!important}
+.sticker.s1{top:10px!important;left:auto!important;right:120px}.sticker.s2{top:12px!important;left:auto!important;right:20px}
+.t-title .btn.primary{top:auto!important;bottom:14px;right:16px;padding:4px 12px}
+.t-stat{padding:12px 14px!important;gap:2px!important;text-align:left;font:inherit;cursor:default}
+button.t-stat{cursor:pointer}
+button.t-stat:hover{transform:translateY(-2px)}
+button.t-stat.on{outline:3px solid var(--ink);outline-offset:-3px}
+.t-stat b{font-size:clamp(26px,3.4vw,36px)!important}
+.t-viral{background:linear-gradient(135deg,#ff5a3c,#ff7aa8)!important;border:none}
+.t-viral .k,.t-viral b,.t-viral .s{color:#fff!important}
+.t-open .s{color:#06352a}
+.cbar{position:sticky;top:0;z-index:8;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:8px 0;margin:0 0 4px;display:grid;gap:8px;border-bottom:2px solid var(--line)}
+.cb-row{display:flex;gap:8px;align-items:center}
+.cb-row .search{flex:1;min-width:0;border-width:2px;border-radius:999px;padding:8px 14px}
+.cb-row select{border-width:2px;border-radius:999px;padding:8px 10px;flex:none}
+.fbtn{flex:none;white-space:nowrap}
+.fbtn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.catstrip{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+.catstrip::-webkit-scrollbar{display:none}
+.catstrip .chip{flex:none;font-size:14px;padding:6px 12px;background:var(--surface)}
+.catstrip .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+#fdlg{width:min(560px,calc(100vw - 24px))}
+.fd-in{padding:18px;display:grid;gap:14px}
+.fd-h{display:flex;justify-content:space-between;align-items:center}
+.fd-h h2{font-family:var(--display);font-weight:400;margin:0}
+.fd-s{display:grid;gap:6px}
+.fd-s .k{font-size:13px;font-weight:700}
+.fd-s .opts{display:flex;flex-wrap:wrap;gap:6px 14px}
+.meta{margin:8px 0}
+
+.grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,232px),1fr))!important;gap:12px!important}
+.cover{height:92px!important}
+.card.big .cover{height:150px!important}
+.card.big{grid-row:auto!important}
+.cover .emo{font-size:56px!important;bottom:-6px!important}
+.card.big .cover .emo{font-size:104px!important}
+.cover .emo.e2{font-size:26px!important;top:8px!important}.cover .emo.e3{display:none}
+.cover .rate{font-size:17px!important;padding:3px 10px!important;bottom:8px!important;left:10px!important}
+.cover .catp{top:8px!important;left:10px!important;font-size:11px!important}
+.cb{padding:10px 12px 12px!important;gap:6px!important}
+.card.ig .c-name{font-size:18px!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card.big .c-name{font-size:24px!important}
+.where{font-size:12px!important}
+.verdict.q{font-size:13.5px!important;-webkit-line-clamp:2!important;padding-left:10px!important;border-left-width:3px!important}
+.card.big .verdict.q{font-size:15px!important;-webkit-line-clamp:4!important}
+.hash{font-size:12.5px!important}
+.bd{font-size:11px!important;padding:2px 7px!important}
+.cf{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:auto;flex-wrap:wrap}
+.cf .c-foot{margin:0;padding:0;gap:4px}
+.cf .c-foot .btn{padding:3px 9px;font-size:12px}
+.risk{margin:0!important;font-size:11px!important}
+@media (max-width:760px){
+  .bento{grid-template-columns:1fr 1fr 1fr}
+  .bento .t-title{grid-column:1/-1!important;padding:14px 16px!important}
+  .meta span:last-child{display:none}
+  .bento .t-stat{padding:10px 12px!important}
+  .t-title::after{font-size:70px!important}
+  .sticker.s1{right:96px}
+  .t-stat b{font-size:22px!important}
+  .t-stat .s{font-size:11px!important}
+  .cb-row{flex-wrap:wrap}
+  .cb-row .search{flex:1 1 100%;order:-1}
+  .cb-row select{flex:1}
+  /* list-style cards on phones */
+  .grid{grid-template-columns:1fr!important;gap:10px!important}
+  .card.ig,.card.big{display:grid!important;grid-template-columns:104px 1fr;grid-column:auto!important;grid-row:auto!important}
+  .card.ig .cover,.card.big .cover{height:auto!important;min-height:100%}
+  .card.ig .cover .emo,.card.big .cover .emo{font-size:48px!important;right:6px}
+  .cover .emo.e2{display:none}
+  .cover .catp{font-size:10px!important;padding:2px 6px!important}
+  .cover .rate{font-size:14px!important;padding:2px 7px!important;left:6px!important;bottom:6px!important;flex-direction:column;gap:0}
+  .cover .rate small{font-size:9.5px!important}
+  .cover .b500{font-size:10px!important;top:auto;bottom:44px;right:auto;left:6px}
+  .card.ig .c-name,.card.big .c-name{font-size:17px!important}
+  .verdict.q,.card.big .verdict.q{-webkit-line-clamp:2!important;font-size:13px!important}
+  .card.big .cover{height:auto!important}
+}
+
+.pubfoot{max-width:1180px;margin:30px auto 90px;padding:0 16px;font-size:12px;color:var(--muted);line-height:1.7}
+</style>
+
+<div class="wrap">
+  <section class="bento" aria-label="總覽">
+    <div class="tile t-title">
+      <span class="sticker s1">業配退散！</span><span class="sticker s2">真心不騙 ✌</span>
+      <h1>真心食記簿</h1>
+      <p class="sub">不看業配、只看真心評論 🍜🔥</p>
+      <button class="btn primary" id="addBtn" type="button" hidden>＋ 新增</button>
+    </div>
+    <div class="tile t-stat"><span class="k">🍽️ 符合</span><b id="stMatch">—</b><span class="s" id="stAll">讀取中</span></div>
+    <button type="button" class="tile t-stat t-open" id="stOpenBtn"><span class="k">🟢 營業中</span><b id="stOpen">—</b><span class="s" id="stOpenTxt">點我只看營業中</span></button>
+    <button type="button" class="tile t-stat t-viral" id="stViralBtn"><span class="k">🚀 短線爆紅</span><b id="stViral">—</b><span class="s" id="stViralTxt">點我看爆紅店</span></button>
+  </section>
+  <section class="cbar" aria-label="篩選">
+    <div class="cb-row">
+      <select id="fCity" aria-label="縣市"></select>
+      <select id="fDist" aria-label="行政區"></select>
+      <input id="fQ" class="search" type="search" placeholder="🔍 搜尋店名、菜色、地址" aria-label="搜尋">
+      <select id="fSort" aria-label="排序">
+        <option value="rating">評分高→低</option>
+        <option value="reviews">評論多→少</option>
+        <option value="priceLo">價格低→高</option>
+        <option value="name">店名</option>
+      </select>
+      <button type="button" class="btn fbtn" id="fMore">🎛️ 篩選<span id="fCnt"></span></button>
+    </div>
+    <div class="catstrip" id="fCat"></div>
+  </section>
+  <dialog id="fdlg"><div class="fd-in">
+    <div class="fd-h"><h2>🎛️ 篩選</h2><button type="button" class="btn" id="fdClose">完成</button></div>
+    <div class="fd-s"><span class="k">🏆 專區</span><div class="scroller" id="fZone"></div></div>
+    <div class="fd-s"><span class="k">⭐ 指名單品</span><div class="scroller" id="fDish"></div></div>
+    <div class="fd-s"><span class="k">🌏 料理風格</span><div class="scroller" id="fCui"></div></div>
+    <div class="fd-s"><span class="k">🍽️ 方式</span><div class="scroller" id="fSvc"></div></div>
+    <div class="fd-s"><span class="k">✅ 條件</span><div class="opts">
+      <label class="toggle"><input type="checkbox" id="fLow"> 業配風險低</label>
+      <label class="toggle"><input type="checkbox" id="fNoChain"> 排除連鎖</label>
+      <label class="toggle"><input type="checkbox" id="fVisited"> 吃過的</label>
+      <label class="toggle"><input type="checkbox" id="fNoClosed"> 隱藏可能歇業</label>
+      <label class="toggle"><input type="checkbox" id="fToday"> 今天有開</label>
+      <label class="toggle"><input type="checkbox" id="fNow"> 營業中</label>
+    </div></div>
+    <button type="button" class="btn" id="fReset">清除全部篩選</button>
+  </div></dialog>
+
+  <div id="importBar" hidden style="margin:8px 0;padding:8px 12px;border-radius:8px;background:var(--accent-soft,#fff3d6);color:var(--ink,#222);font-size:14px"></div>
+  <div class="meta"><span id="count">正在讀取店家資料…</span><span>評分、價格為整理時的網路資料，出發前請再確認</span></div>
+  <div class="zone viralz" id="viralBanner" hidden>
+    <h2>🚀 短線爆紅店</h2>
+    <p>比較每家店最近一次與約 30 天前（資料不足 30 天時用最早一筆）的 Google 評論數，挑出評論數暴增的店：每週新增 25 則以上且成長 4% 以上，或成長 12% 以上（至少新增 15 則）。依「成長幅度 × 增加速度」排序。</p>
+    <p class="hint">評論暴增可能是新開幕、上媒體、網紅推薦，也可能是「打卡送／留評送」活動，記得搭配業配風險和評論內容一起看。</p>
+  </div>
+  <div class="zone" id="zoneBanner" hidden>
+    <h2>500碗 2026</h2>
+    <p>由 500輯 邀集 50 位評審選出的台灣小吃指南，分 1 到 3 碗三個等級，3 碗最高。<span id="zoneStat"></span>依碗數排序。</p>
+    <p class="hint">名單來源：<a href="https://500times.udn.com/wtimes/story/123497/9547367" target="_blank" rel="noopener">500輯｜2026 第四屆完整得獎名單</a>（2026-06-26 公布）</p>
+  </div>
+  <main class="grid" id="list">
+    <div class="empty"><h2>正在讀取店家</h2><p>資料載入後會依縣市、品項列出；也可以按「新增店家」加入自己的口袋名單。</p></div>
+  </main>
+  <div class="more"><button type="button" class="btn" id="moreBtn" hidden>再顯示 60 家</button></div>
+</div>
+<div class="fab"><button type="button" class="fb pri" id="fabGo" aria-label="回到最上面並搜尋" title="回到最上面並搜尋"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button></div>
+<footer class="pubfoot">
+  <p>真心食記簿・資料整理於 <span id="built"></span>。評分、評論數、營業時間來源為 Google 地圖公開資訊，菜單依店家公開照片整理；一句話總評與優缺點為本站依網路評論自行歸納，非評論原文。</p>
+  <p>所有資訊僅供參考，價格與營業時間以店家現場公告為準；如有錯誤或店家希望更正，歡迎來信告知。</p>
+</footer>
+<dialog id="det"><div class="det-in" id="detBody"></div></dialog>
+
+<dialog id="dlg">
+  <form class="ed" id="edForm">
+    <h2 id="edTitle">新增店家</h2>
+    <label class="f">店名<input id="e_name" required></label>
+    <div class="f2">
+      <label class="f">縣市<input id="e_city" list="cityList" required placeholder="台中市"></label>
+      <label class="f">行政區<input id="e_district" placeholder="西屯區"></label>
+    </div>
+    <div class="f2">
+      <label class="f">品項<input id="e_category" list="catList" required placeholder="拉麵"></label>
+      <label class="f">料理類型<input id="e_cuisine" list="cuiList" placeholder="日式"></label>
+    </div>
+    <div class="f2">
+      <label class="f">方式<select id="e_service"><option>單點</option><option>吃到飽</option></select></label>
+      <label class="f">每人價位<input id="e_price" placeholder="NT$250-350"></label>
+    </div>
+    <div class="f2">
+      <label class="f">Google 評分<input id="e_rating" type="number" step="0.1" min="0" max="5"></label>
+      <label class="f">評論數<input id="e_reviews" type="number" min="0"></label>
+    </div>
+    <div class="f2">
+      <label class="f">業配風險<select id="e_risk"><option>低</option><option>中</option><option>高</option></select></label>
+      <label class="f">招牌（用、分隔）<input id="e_sig"></label>
+    </div>
+    <label class="f">業配判斷依據<input id="e_riskNote"></label>
+    <label class="f">一句話總評<input id="e_verdict"></label>
+    <div class="f2">
+      <label class="f">優點（一行一點）<textarea id="e_pros" rows="3"></textarea></label>
+      <label class="f">缺點（一行一點）<textarea id="e_cons" rows="3"></textarea></label>
+    </div>
+    <label class="f">地址<input id="e_address"></label>
+    <label class="f">電話<input id="e_phone" type="tel" inputmode="tel"></label>
+    <label class="f">備註（營業時間、公休等）<input id="e_notes"></label>
+    <label class="f">來源（一行一個：標題 | 網址）<textarea id="e_sources" rows="3"></textarea></label>
+    <label class="f">公休日<input id="e_closed" placeholder="週二／無固定公休"></label>
+    <div class="hint">營業時間：24 小時制，多段用逗號分隔，例如 11:30-14:00, 17:00-20:30；休息填「公休」</div>
+    <div class="hgrid">
+      <label class="f">週一<input id="e_h_mon"></label><label class="f">週二<input id="e_h_tue"></label>
+      <label class="f">週三<input id="e_h_wed"></label><label class="f">週四<input id="e_h_thu"></label>
+      <label class="f">週五<input id="e_h_fri"></label><label class="f">週六<input id="e_h_sat"></label>
+      <label class="f">週日<input id="e_h_sun"></label>
+    </div>
+    <label class="f">營業時間備註<input id="e_hoursNote"></label>
+    <label class="f">菜單（「## 分類」開頭一行，品項一行一個：品名 | 價格 | 備註）<textarea id="e_menu" rows="8" placeholder="## 拉麵&#10;濃厚雞豚拉麵 | 260&#10;沾麵 | 290 | 限量"></textarea></label>
+    <div class="f2">
+      <label class="f">菜單說明（服務費、價格年份）<input id="e_menuNote"></label>
+      <label class="f">菜單資料年月<input id="e_menuUpd" placeholder="2026-10"></label>
+    </div>
+    <div class="f2">
+      <label class="f">我的評分（1–5）<input id="e_my" type="number" min="1" max="5" step="0.5"></label>
+      <label class="f" style="align-content:end"><span class="toggle"><input type="checkbox" id="e_visited"> 吃過了</span></label>
+    </div>
+    <label class="f">我的筆記<textarea id="e_myNote" rows="2"></textarea></label>
+    <p class="hint" id="edErr" hidden></p>
+    <div class="actions">
+      <div id="delZone"></div>
+      <div class="row"><button type="button" class="btn" id="cancelBtn">取消</button><button type="submit" class="btn primary" id="saveBtn">儲存</button></div>
+    </div>
+  </form>
+</dialog>
+<dialog id="phDlg" class="ph-dlg">
+  <form id="phForm">
+    <h2 id="phTitle">加照片</h2>
+    <label class="f">選擇照片（可多張，手機可直接拍照）<input type="file" id="phFile" accept="image/*" multiple required></label>
+    <label class="f">這是哪一道菜？（選填）<input id="phDish" list="dishList" placeholder="例如：濃厚雞豚拉麵；不填就是店家照片"></label>
+    <datalist id="dishList"></datalist>
+    <p class="hint">照片會壓縮到最長邊 1600 像素後存進這個 app。</p>
+    <p class="hint" id="phErr" hidden></p>
+    <div class="actions"><span></span><div class="row"><button type="button" class="btn" id="phCancel">取消</button><button type="submit" class="btn primary" id="phSave">上傳</button></div></div>
+  </form>
+</dialog>
+<dialog id="lb">
+  <div class="lb-in">
+    <img id="lbImg" alt="">
+    <div class="cap"><span id="lbCap"></span><span class="row" id="lbAct"></span></div>
+  </div>
+</dialog>
+<datalist id="cityList"></datalist><datalist id="catList"></datalist><datalist id="cuiList"></datalist>
+
+<script>
+const $=s=>document.querySelector(s);
+const BASE_CATS=["拉麵","日式料理","排餐","鐵板燒","火鍋","韓式","炒飯","中式","海鮮","台式小吃","西式"];
+const BASE_CUI=["日式","台式","韓式","中式","港式","美式","義式","泰式"];
+const DISHES=["牛肉麵","滷肉飯","肉羹麵","肉圓","炒飯","擔仔麵","米糕","鍋燒意麵","餛飩","水餃","小籠包","鴨肉飯","雞肉飯","豬腳","臭豆腐","粄條","米粉","擀麵","鰻魚飯","丼飯","咖哩","壽司","牛排","燒肉","羊肉爐","麻辣鍋","烤鴨","港式點心","炸雞","水煎包","碗粿","蚵仔煎"];
+const DISH_SYN={"滷肉飯":["滷肉飯","魯肉飯","肉燥飯"],"肉羹麵":["肉羹","肉焿","肉庚"],"小籠包":["小籠包","湯包"],"擀麵":["擀麵","桿麵"],"港式點心":["港點","港式點心","飲茶","燒賣","蝦餃"],"鴨肉飯":["鴨肉飯","鴨肉麵","鴨肉冬粉"],"粄條":["粄條","板條"],"麻辣鍋":["麻辣鍋","麻辣火鍋"],"丼飯":["丼"],"燒肉":["燒肉","燒烤"],"水餃":["水餃","餃子"],"米糕":["米糕","筒仔米糕"],"雞肉飯":["雞肉飯","火雞肉飯"],"咖哩":["咖哩","咖喱"]};
+let customDishes=[];
+const dishText=r=>(r._dt??=[r.name,r.verdict,r.notes,r.mk,...(r.signature||[]),...(r.pros||[]),...(r.menu||[]).flatMap(s=>[s.section,...(s.items||[]).map(i=>i.name)])].join(" "));
+const hasDish=(r,d)=>{const m=(r._hd??={});if(d in m)return m[d];const t=dishText(r);return m[d]=(DISH_SYN[d]||[d]).some(k=>t.includes(k))};
+let shown=60,lastSig="",itemsVer=0,dishCache={k:""};
+let items=[], db=null, assets=null, canWrite=false, editing=null, phTarget=null;
+const imgQ=(r,dish)=>"https://www.google.com/search?tbm=isch&q="+encodeURIComponent([r.name.replace(/\s+[^\s]*店$/,""),dish||"台中"].join(" "));
+const blob=id=>"/_blob/"+id;
+const F={city:"台中市",dist:"",cat:"",cui:"",svc:"",q:"",low:false,visited:false,sort:"rating"};
+try{const s=JSON.parse(localStorage.getItem("ff")||"null");if(s)Object.assign(F,s,{q:""})}catch(e){}
+const saveF=()=>{try{localStorage.setItem("ff",JSON.stringify(F))}catch(e){}};
+
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function priceLo(p){const m=String(p||"").replace(/,/g,"").match(/\d+/);return m?+m[0]:1e9}
+function uniq(a){return [...new Set(a.filter(Boolean))]}
+function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.append(d);setTimeout(()=>d.remove(),2200)}
+
+function chips(el,opts,key){
+  el.innerHTML="";
+  opts.forEach(([v,label,n])=>{
+    const b=document.createElement("button");b.type="button";b.className="chip";
+    b.setAttribute("aria-pressed",String(F[key]===v));
+    b.innerHTML=esc(label)+(n!=null?`<span class="n">${n}</span>`:"");
+    b.onclick=()=>{F[key]=F[key]===v&&v!==""?"":v;saveF();render()};
+    el.append(b);
+  });
+}
+function renderDish(base){
+  const el=$("#fDish");el.innerHTML="";
+  const all=uniq([...DISHES,...customDishes]);
+  const ck=[itemsVer,F.city,F.dist,all.join(",")].join("|");
+  if(dishCache.k!==ck){dishCache={k:ck,m:new Map(all.map(d=>[d,base.reduce((n,r)=>n+(hasDish(r,d)?1:0),0)]))}}
+  const list=all.map(d=>[d,dishCache.m.get(d)||0]).filter(([d,n])=>n>0||customDishes.includes(d)||F.dish===d);
+  const mk=(label,pressed,on)=>{const b=document.createElement("button");b.type="button";b.className="chip";b.setAttribute("aria-pressed",String(pressed));b.innerHTML=label;b.onclick=on;el.append(b);return b};
+  mk("全部",!F.dish,()=>{F.dish="";saveF();render()});
+  const ord=d=>{const i=DISHES.indexOf(d);return i<0?-1:i};list.sort((x,y)=>ord(x[0])-ord(y[0]));
+  const LIM=12,more=list.length>LIM;
+  const shown=(F.dishMore||!more)?list:list.filter(([d],i)=>i<LIM||d===F.dish);
+  shown.forEach(([d,n])=>{
+    const b=mk(esc(d)+`<span class="n">${n}</span>`,F.dish===d,()=>{F.dish=F.dish===d?"":d;saveF();render()});
+    if(canWrite&&customDishes.includes(d)){const x=document.createElement("span");x.className="x";x.textContent="×";x.title="移除這個單品";x.setAttribute("role","button");x.setAttribute("aria-label","移除 "+d);
+      x.onclick=e=>{e.stopPropagation();saveDishes(customDishes.filter(c=>c!==d));if(F.dish===d){F.dish="";saveF()}};b.append(x)}
+  });
+  if(more){const t=mk(F.dishMore?"收合 ▴":`更多 ${list.length-LIM} ▾`,false,()=>{F.dishMore=!F.dishMore;saveF();render()});t.classList.add("add")}
+  if(canWrite){
+    const a=mk("＋ 新增單品",false,()=>{
+      const w=document.createElement("span");w.className="dish-add";
+      w.innerHTML='<input type="text" maxlength="12" placeholder="例：麻油雞" aria-label="新增單品名稱"><button type="button" class="chip">加入</button>';
+      a.replaceWith(w);const inp=w.querySelector("input");inp.focus();
+      const go=()=>{const v=inp.value.trim();if(!v){render();return}if(all.includes(v)){F.dish=v;saveF();render();return}F.dish=v;saveF();saveDishes([...customDishes,v])};
+      w.querySelector("button").onclick=go;inp.onkeydown=e=>{if(e.key==="Enter")go();if(e.key==="Escape")render()};
+    });a.classList.add("add");
+  }
+}
+async function saveDishes(list){
+  customDishes=uniq(list);render();
+  if(!db)return;
+  try{await db.collection("meta").doc("dishes").set({list:customDishes})}catch(err){toast("單品清單儲存失敗："+(err.code||""))}
+}
+function sel(el,opts,val){el.innerHTML=opts.map(([v,l])=>`<option value="${esc(v)}"${v===val?" selected":""}>${esc(l)}</option>`).join("")}
+
+
+/* ---- chain detection: same brand appears 2+ times in the DB, or a known chain brand ---- */
+const KNOWN_CHAINS=["石二鍋","八方雲集","鬍鬚張","爭鮮","瓦城","鼎泰豐","饗食天堂","欣葉","王品","西堤","陶板屋","原燒","夏慕尼","藝奇","青花驕","肉次方","麻膳堂","大戶屋","吉野家","摩斯","漢堡王","肯德基","麥當勞","拿坡里","必勝客","達美樂","三商巧福","丼丼屋","壽司郎","スシロー","藏壽司","くら寿司","築間","海底撈","樂麵屋","一風堂","mo-mo-paradise","涮乃葉","牛角","乾杯","屋馬","四海遊龍","coco壹番屋","茶六","鳥貴族","貳樓","second floor","麥味登","美而美","拉亞","q burger","弘爺","晨間廚房","早安美芝城","呷尚寶","すき家","鼎王","無老鍋","老先覺","三媽臭臭鍋","嗑肉石鍋","小蒙牛","問鼎","金大鋤","時時香","饗泰多","成功牛排","真涮","錢都","nu pasta","帕司答","梁社漢","金大元","超吉","森森燒肉","斐得","京厚屋","港町十三番地","鬼匠拉麵","平禄壽司","九湯屋","涓豆腐","樂樂鍋","不打羊","月團圓","竹間","肉多多","阿鍋家","十二段","霸味薑母鴨","麵屋一燈","燒肉風間","微笑咖哩","大埔鐵板燒","漢林鐵板燒","豪品鐵板燒","亞丁尼","清一色牛肉麵","老陳海南雞飯","天天來海南雞飯","米撰","牛比蔥","泰潮","大城享泰食","吉蜂蒸餃","酉金鵝","長疆","澎發號","粥大福","艾初","小園迷你火鍋","莊家火雞肉飯","蕭爌肉飯","容燒","茶六","柚菴","臭大蔬","烏龍麵所","嵐山","天慈素食","麵匡匡","大股熟成","熱浪小島","歐浮","夜燒","饗蔬","織田信長","初心手作壽司","姜滿堂","八柴","肉鮮生","石研室","享鴨","築地鮮魚","雞湯大叔","瀧厚","史堤克","金春喜","藏王極上鍋"];
+const GENERIC=new Set(["越南小吃","小吃","麵店","無名","無名小吃","飯飯","十二月","早餐店","自助餐","便當","火鍋","牛肉麵","滷肉飯","肉圓","水餃","炒飯","拉麵","燒肉","鐵板燒","麵館","小館","食堂"]);
+const CSEP=/[\s\-－–—|｜\/／(（【\[〔「『·・,，:：]/;
+function brandKey(n){
+  n=String(n||"").replace(/[|｜].*$/,"").replace(/[(（【\[〔][^)）】\]〕]*[)）】\]〕]/g,"").trim();
+  n=n.replace(/[\s\-－–—|｜\/／(（【\[〔「『·・,，:：]+[^\s\-－–—(（]{1,10}店\s*$/,"").trim();
+  n=n.replace(/(總店|分店|本店|門市)$/,"").trim();
+  if(/^[一-鿿]/.test(n))n=n.split(CSEP)[0];
+  return n.replace(/\s+/g,"").toLowerCase();
+}
+let chainSet=null, chainFor=-1;
+function isChain(r){
+  if(chainFor!==items.length){
+    const c=new Map();items.forEach(x=>{const k=brandKey(x.name);if(k.length>=2&&!/^\d+$/.test(k)&&!GENERIC.has(k))c.set(k,(c.get(k)||0)+1)});
+    const ks=[...c.keys()];items.forEach(x=>{const k=brandKey(x.name);if(k.endsWith("店")&&k.length>=5){for(let p=k.length-2;p>=2;p--){const pre=k.slice(0,p);if(c.has(pre)&&pre!==k){c.set(pre,c.get(pre)+1);x._bk=pre;break}}}});
+    chainSet=new Set([...c].filter(([,v])=>v>=2).map(([k])=>k));chainFor=items.length;items.forEach(x=>{delete x._ch});
+  }
+  if(r._ch===undefined){const nm=String(r.name||"").toLowerCase();r._ch=chainSet.has(r._bk||brandKey(r.name))||KNOWN_CHAINS.some(b=>nm.includes(b))}
+  return r._ch;
+}
+let rq=0,lastRender=0,rT=0;
+function renderSoon(minGap){
+  if(rq||rT)return;
+  const wait=Math.max(0,(minGap||0)-(Date.now()-lastRender));
+  if(wait>0){rT=setTimeout(()=>{rT=0;renderSoon()},wait);return}
+  rq=requestAnimationFrame(()=>{rq=0;render()});
+}
+function render(){lastRender=Date.now();
+  const cities=uniq(["台中市",...items.map(r=>r.city)]);
+  if(!cities.includes(F.city))F.city=cities[0];
+  sel($("#fCity"),cities.map(c=>[c,c]),F.city);
+  const inCity=items.filter(r=>r.city===F.city);
+  const dists=uniq(inCity.map(r=>r.district)).sort();
+  if(F.dist&&!dists.includes(F.dist))F.dist="";
+  sel($("#fDist"),[["","全部區域"],...dists.map(d=>[d,d])],F.dist);
+  const base=inCity.filter(r=>!F.dist||r.district===F.dist);
+  const cnt=(arr,k,v)=>arr.filter(r=>r[k]===v).length;
+  const cats=uniq([...BASE_CATS,...items.map(r=>r.category)]);
+  renderDish(base);
+  chips($("#fZone"),[["","全部"],["viral","🚀 短線爆紅",base.filter(r=>viral(r)?.hot).length],["b500","500碗 2026",base.filter(r=>r.award_500).length]],"zone");
+  chips($("#fCat"),[["","🍴 全部",base.length],...cats.map(c=>[c,(EMO[c]||"🍴")+" "+c,cnt(base,"category",c)])],"cat");
+  const cuis=uniq([...BASE_CUI.filter(c=>base.some(r=>r.cuisine===c)),...base.map(r=>r.cuisine)]);
+  chips($("#fCui"),[["","全部"],...cuis.map(c=>[c,c,cnt(base,"cuisine",c)])],"cui");
+  chips($("#fSvc"),[["","全部"],["單點","單點",cnt(base,"service","單點")],["吃到飽","吃到飽",cnt(base,"service","吃到飽")]],"svc");
+  $("#fLow").checked=F.low;$("#fVisited").checked=F.visited;$("#fNoChain").checked=!!F.noChain;$("#fToday").checked=!!F.today;$("#fNoClosed").checked=!!F.noClosed;$("#fNow").checked=!!F.now;$("#fSort").value=F.sort;
+  $("#cityList").innerHTML=cities.map(c=>`<option value="${esc(c)}">`).join("");
+  $("#catList").innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join("");
+  $("#cuiList").innerHTML=uniq([...BASE_CUI,...items.map(r=>r.cuisine)]).map(c=>`<option value="${esc(c)}">`).join("");
+
+  const q=F.q.trim().toLowerCase();
+  let rows=base.filter(r=>(F.zone!=="b500"||r.award_500)&&(F.zone!=="viral"||viral(r)?.hot)&&(!F.dish||hasDish(r,F.dish))&&(!F.cat||r.category===F.cat)&&(!F.cui||r.cuisine===F.cui)&&(!F.svc||r.service===F.svc)&&(!F.low||r.sponsor_risk==="低")&&(!F.visited||r.visited)&&(!F.noChain||!isChain(r))&&(!F.noClosed||!closedWarn(r))&&(!F.today||status(r).today===true)&&(!F.now||status(r).open)
+    &&(!q||(r._q??=[r.name,r.address,r.mk,r.verdict,...(r.signature||[]),...(r.menu||[]).flatMap(s=>(s.items||[]).map(i=>i.name))].join(" ").toLowerCase()).includes(q)));
+  const altR=x=>{const a=(x.alt_ratings||[]).find(a=>a.rating!=null);return a?a.rating/10-1:-2};
+  const s={rating:(a,b)=>(b.google_rating??altR(b))-(a.google_rating??altR(a))||(b.review_count??0)-(a.review_count??0),
+    reviews:(a,b)=>(b.review_count??-1)-(a.review_count??-1),priceLo:(a,b)=>priceLo(a.price)-priceLo(b.price),name:(a,b)=>a.name.localeCompare(b.name,"zh-Hant")}[F.sort];
+  rows.sort(F.zone==="b500"?(a,b)=>(b.award_500?.bowls||0)-(a.award_500?.bowls||0)||s(a,b):F.zone==="viral"?(a,b)=>viral(b).score-viral(a).score:s);
+  $("#count").textContent=`${F.city}${F.dist?"・"+F.dist:""}：符合 ${rows.length} 家（共 ${items.length} 家）`;
+  const sig=JSON.stringify(F);
+  $("#stMatch").textContent=rows.length.toLocaleString();$("#stAll").textContent=`${F.city}${F.dist?"・"+F.dist:""}・共 ${items.length.toLocaleString()} 家`;
+  $("#stOpen").textContent=base.filter(r=>status(r).open).length.toLocaleString();$("#stOpenTxt").textContent=F.now?"✓ 已篩選・點我取消":"點我只看營業中";$("#stOpenBtn").classList.toggle("on",!!F.now);
+  $("#stViral").textContent=base.filter(r=>viral(r)?.hot).length.toLocaleString();$("#stViralTxt").textContent=F.zone==="viral"?"✓ 已篩選・點我取消":"點我看爆紅店";$("#stViralBtn").classList.toggle("on",F.zone==="viral");
+  const fc=[F.zone,F.dish,F.cui,F.svc,F.low,F.noChain,F.noClosed,F.visited,F.today,F.now].filter(Boolean).length;$("#fCnt").textContent=fc?" "+fc:"";$("#fMore").classList.toggle("on",fc>0);
+  const zb=$("#zoneBanner");zb.hidden=F.zone!=="b500";$("#viralBanner").hidden=F.zone!=="viral";
+  if(!zb.hidden){const NOTE={"台中市":"台中共 33 家入選：3 碗 1 家、2 碗 2 家、1 碗 30 家（藍山牛肉麵已歇業，未列出）。","新竹市":"新竹（市＋縣）共 18 家入選，全部為 1 碗；新竹市的「無名麵店」因無法確認是哪一家，暫未列出。","苗栗縣":"苗栗共 15 家入選：2 碗 1 家（北苗二家合）、1 碗 14 家。","新竹縣":"新竹（市＋縣）共 18 家入選，全部為 1 碗；新竹市的「無名麵店」因無法確認是哪一家，暫未列出。"};
+    const b5=inCity.filter(r=>r.award_500);$("#zoneStat").textContent=(NOTE[F.city]||"")+`目前${F.city}列出 ${b5.length} 家。`;}
+  const L=$("#list");
+  if(!items.length){L.innerHTML=`<div class="empty"><h2>還沒有店家</h2><p>資料讀取中，請稍候。</p></div>`;return}
+  if(!rows.length){$("#moreBtn").hidden=true;L.innerHTML=`<div class="empty"><h2>沒有符合的店家</h2><p>試著放寬篩選條件，或新增一家。</p></div>`;return}
+  if(sig!==lastSig){shown=60;lastSig=sig}
+  L.innerHTML=rows.slice(0,shown).map(card).join("");
+  const mb=$("#moreBtn");mb.hidden=rows.length<=shown;mb.textContent=`再顯示 ${Math.min(60,rows.length-shown)} 家（還有 ${rows.length-shown} 家）`;
+  if(detId&&det.open){const r=items.find(x=>x._id===detId);if(r){const op=[...det.querySelectorAll("details")].map(d=>d.open);$("#detBody").innerHTML=detail(r);$("#detClose").onclick=()=>det.close();det.querySelectorAll("details").forEach((d,i)=>{if(op[i])d.open=true})}}
+}
+
+const DK=["sun","mon","tue","wed","thu","fri","sat"], WD=["mon","tue","wed","thu","fri","sat","sun"];
+const DN={mon:"週一",tue:"週二",wed:"週三",thu:"週四",fri:"週五",sat:"週六",sun:"週日"};
+let _now=null,_nowT=0;
+function tpeNow(){if(_now&&Date.now()-_nowT<20000)return _now;_nowT=Date.now();return _now=tpeNow0()}
+function tpeNow0(){
+  const p=Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Taipei",weekday:"short",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date()).map(x=>[x.type,x.value]));
+  return {d:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(p.weekday),m:(+p.hour%24)*60+ +p.minute};
+}
+function segs(s){
+  if(!s||/公休|休息/.test(s))return [];
+  const out=[],re=/(\d{1,2}):(\d{2})\s*[-–~～]\s*(\d{1,2}):(\d{2})/g;let x;
+  while((x=re.exec(s))){const a=+x[1]*60+ +x[2];let b=+x[3]*60+ +x[4];if(b<=a)b+=1440;out.push([a,b])}
+  return out;
+}
+const hm=v=>{v%=1440;return String(Math.floor(v/60)).padStart(2,"0")+":"+String(v%60).padStart(2,"0")};
+function status(r){tpeNow();if(r._stK===_nowT)return r._st;r._stK=_nowT;return r._st=status0(r)}
+function status0(r){
+  const h=r.hours;if(!h)return {cls:"unk",txt:"營業時間未知",open:false,today:null};
+  const {d,m}=tpeNow(),tk=DK[d],yk=DK[(d+6)%7],ts=segs(h[tk]),ys=segs(h[yk]);
+  for(const[a,b] of ys)if(b>1440&&m+1440>=a&&m+1440<b)return {cls:b-1440-m<=60?"soon":"on",txt:(b-1440-m<=60?"即將打烊 ":"營業中・至 ")+hm(b),open:true,today:true};
+  for(const[a,b] of ts)if(m>=a&&m<b)return {cls:b-m<=60?"soon":"on",txt:(b-m<=60?"即將打烊 ":"營業中・至 ")+hm(b),open:true,today:true};
+  const nxt=ts.find(([a])=>a>m);
+  if(nxt)return {cls:"soon",txt:`今天 ${hm(nxt[0])} 開`,open:false,today:true};
+  if(h[tk]==null)return {cls:"unk",txt:"今日時間未知",open:false,today:null};
+  if(!ts.length)return {cls:"off",txt:"今日公休",open:false,today:false};
+  return {cls:"off",txt:"今日已打烊",open:false,today:true};
+}
+function hoursBlock(r){
+  if(!r.hours&&!r.closed_days)return "";
+  const tk=DK[tpeNow().d];
+  const rows=WD.map(k=>{const v=r.hours?.[k];const closed=v&&/公休|休息/.test(v);
+    return `<span class="d${k===tk?" today":""}">${DN[k]}${k===tk?"（今）":""}</span><span class="t${closed?" closed":""}${k===tk?" today":""}">${v==null?"未知":esc(String(v).replace(/,\s*/g,"、"))}</span>`}).join("");
+  const src=(r.hours_sources||[]).map(s=>`<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title||s.url)}</a></li>`).join("");
+  return `<details><summary>營業時間<span class="mbadge">公休：${esc(r.closed_days||"未知")}${r.hours_confidence?"・可信度"+esc(r.hours_confidence):""}</span></summary>
+    <div class="hrs">${rows}</div>
+    <div class="kv">${r.hours_note?`<div class="mnote">${esc(r.hours_note)}</div>`:""}${r.hours_updated?`<div><span>資料時間　</span>${esc(r.hours_updated)}</div>`:""}</div>
+    ${src?`<div class="src kv"><span>來源</span><ul>${src}</ul></div>`:""}</details>`;
+}
+function menuCount(r){return (r.menu||[]).reduce((n,s)=>n+(s.items||[]).length,0)}
+function menuBlock(r){
+  const n=menuCount(r), q=F.q.trim().toLowerCase();
+  if(!n&&!r.menu_note)return "";
+  const hitAny=q&&(r.menu||[]).some(s=>(s.items||[]).some(i=>String(i.name).toLowerCase().includes(q)));
+  const secs=(r.menu||[]).map(s=>`<div><h5>${esc(s.section)}</h5>${(s.items||[]).map(i=>{
+    const hit=q&&String(i.name).toLowerCase().includes(q);
+    const own=(r.photos||[]).find(p=>p.dish===i.name);
+    return `<div class="mi${hit?" hit":""}"><span class="nm">${own?`<img class="th" src="${blob(own.id)}" alt="${esc(i.name)}" data-view="${esc(r._id)}|${esc(own.id)}" loading="lazy">`:""}<a href="${imgQ(r,i.name)}" target="_blank" rel="noopener" title="看網路照片">${esc(i.name)}</a></span><span class="pr${i.price==null?" na":""}">${i.price==null?"—":"$"+Number(i.price).toLocaleString()}</span>${i.note?`<span class="nt">${esc(i.note)}</span>`:""}</div>`}).join("")}</div>`).join("");
+  const src=(r.menu_sources||[]).map(s=>`<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title||s.url)}</a></li>`).join("");
+  return `<details${hitAny?" open":""}><summary>菜單 ${n} 項<span class="mbadge">${esc(r.menu_completeness||"")}${r.menu_updated?"・"+esc(r.menu_updated):""}</span></summary>
+    <div class="menu">${r.menu_note?`<div class="mnote">${esc(r.menu_note)}</div>`:""}<div class="hint">點品名可看網路上的照片（另開 Google 圖片）</div>${secs}${src?`<div class="src kv"><span>菜單來源</span><ul>${src}</ul></div>`:""}</div></details>`;
+}
+function menuToText(m){return (m||[]).map(s=>"## "+s.section+"\n"+(s.items||[]).map(i=>[i.name,i.price??"",i.note||""].join(" | ").replace(/( \| )+$/,"")).join("\n")).join("\n")}
+function textToMenu(t){const out=[];let cur=null;
+  t.split("\n").map(l=>l.trim()).filter(Boolean).forEach(l=>{
+    if(l.startsWith("##")){cur={section:l.replace(/^#+\s*/,""),items:[]};out.push(cur);return}
+    if(!cur){cur={section:"菜單",items:[]};out.push(cur)}
+    const[n,p,...rest]=l.split("|").map(s=>s.trim());const pn=p!==undefined&&p!==""&&!isNaN(+p)?+p:null;
+    const it={name:n,price:pn};const note=[pn===null&&p?p:"",...rest].filter(Boolean).join("｜");if(note)it.note=note;cur.items.push(it)});
+  return out}
+const TINT={"拉麵":1,"日式料理":1,"鐵板燒":2,"排餐":2,"火鍋":4,"韓式":4,"炒飯":5,"中式":5,"台式小吃":2,"海鮮":3,"西式":6,"早午餐":3,"異國料理":6};
+function ratingHtml(r){
+  const alt=(r.alt_ratings||[]).filter(a=>a.rating!=null);
+  return r.google_rating!=null?`<b>${Number(r.google_rating).toFixed(1)}</b><small>Google ${r.review_count!=null?Number(r.review_count).toLocaleString()+" 則":"評論數未知"}</small>`
+    :alt.length?`<b class="alt">${Number(alt[0].rating).toFixed(1)}</b><small>${esc(alt[0].platform)}${alt[0].count!=null?" "+alt[0].count+" 則":""}</small>${alt[0].count!=null&&alt[0].count<10?`<small>評論少，僅供參考</small>`:""}`
+    :`<small>無評分資料</small>`;
+}
+const isBig=r=>!!r.award_500||(r.google_rating>=4.7&&(r.review_count||0)>=8000)||(r.photos||[]).length>0;
+function tagsHtml(r){return `<div class="tags">${r.cuisine?`<span class="tag">${esc(r.cuisine)}</span>`:""}<span class="tag${r.service==="吃到飽"?" ayce":""}">${esc(r.service)}</span><span class="stamp ${esc(r.sponsor_risk||"中")}" title="${esc(r.sponsor_note)}">業配風險 ${esc(r.sponsor_risk||"?")}</span>${r.visited?`<span class="tag">✓ 吃過</span>`:""}${(st=>`<span class="open ${st.cls}">${st.txt}</span>`)(status(r))}</div>`}
+function bowlHtml(r){return r.award_500?`<div class="bowl" title="${esc(r.award_500.note||"")}"><span class="bw">${"◉".repeat(r.award_500.bowls||1)}</span>500碗 ${esc(r.award_500.year||2026)}・${r.award_500.bowls||1} 碗</div>`:""}
+function footHtml(r,full){const tel=r.phone?String(r.phone).replace(/[^\d+]/g,""):"";return `<div class="c-foot">
+    ${tel?`<a class="btn tel" href="tel:${esc(tel)}" aria-label="撥打 ${esc(r.phone)}">☎ ${full?esc(r.phone):"撥打"}</a>`:""}
+    <a class="btn" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name+" "+(r.address||(r.city+r.district)))}" target="_blank" rel="noopener">🗺️ 地圖</a>
+    <a class="btn" href="${imgQ(r)}" target="_blank" rel="noopener">📷${full?" 網路照片":""}</a>
+    ${full&&assets?`<button class="btn" type="button" data-ph="${esc(r._id)}">加照片</button>`:""}
+    ${full&&canWrite?`<button class="btn" type="button" data-visit="${esc(r._id)}">${r.visited?"取消吃過":"標記吃過"}</button><button class="btn" type="button" data-edit="${esc(r._id)}">編輯</button>`:""}
+  </div>`}
+const EMO={"拉麵":"🍜","日式料理":"🍣","排餐":"🥩","鐵板燒":"🍳","火鍋":"🍲","韓式":"🌶️","炒飯":"🍚","中式":"🥟","海鮮":"🦐","台式小吃":"🍢","西式":"🍝","早午餐":"🥞","異國料理":"🍛"};
+const GRAD={1:["#ff8a5c","#ff5a7a"],2:["#ffc23d","#ff8a3d"],3:["#4db8ff","#3dd6b0"],4:["#ff7aa8","#ff5a3c"],5:["#3dd6b0","#a8e05f"],6:["#8b6cff","#ff7aa8"]};
+const kfmt=n=>n>=10000?(n/10000).toFixed(1).replace(/\.0$/,"")+"萬":Number(n).toLocaleString();
+function lateNight(r){const h=r.hours;if(!h)return false;const v=h[DK[tpeNow().d]];return segs(v).some(([a,b])=>b>=23*60+30)}
+function viral(r){
+  if(r._vr!==undefined&&r._vrK===itemsVer)return r._vr;r._vrK=itemsVer;
+  const hs=(r.hist||[]).filter(x=>x&&x.d&&(x.n!=null||Array.isArray(x.h))).map(x=>({d:x.d,n:x.n!=null?x.n:x.h.reduce((a,b)=>a+b,0)})).sort((a,b)=>a.d<b.d?-1:1);
+  if(hs.length<2)return r._vr=null;
+  const dd=s=>Date.parse(s+"T00:00:00+08:00"),L=hs[hs.length-1];
+  let B=hs[0];for(const x of hs)if(dd(L.d)-dd(x.d)>=30*864e5)B=x;
+  const days=(dd(L.d)-dd(B.d))/864e5;if(days<3)return r._vr=null;
+  const d=L.n-B.n,wk=d/days*7,rel=d/Math.max(B.n,30);
+  const hot=d>=15&&((wk>=25&&rel>=.04)||(rel>=.12));
+  return r._vr={days:Math.round(days),d,wk:Math.round(wk),rel,hot,score:rel*Math.sqrt(Math.max(wk,0)),n:L.n};
+}
+function trend(r){
+  const hs=(r.hist||[]).filter(x=>x&&x.d&&Array.isArray(x.h)&&x.h.length===5).slice().sort((a,b)=>a.d<b.d?-1:1);
+  if(!hs.length)return null;
+  const L=hs[hs.length-1],dd=s=>Date.parse(s+"T00:00:00+08:00");
+  if(hs.length<2)return {wait:true,since:L.d};
+  let B=hs[0];for(const x of hs)if(dd(L.d)-dd(x.d)>=30*864e5)B=x;
+  const days=Math.round((dd(L.d)-dd(B.d))/864e5);
+  if(days<7)return {wait:true,since:hs[0].d};
+  const dh=L.h.map((v,i)=>Math.max(0,v-B.h[i]));const good=dh[3]+dh[4],bad=dh[0]+dh[1],mid=dh[2],tot=good+bad+mid;
+  const allBad=(L.h[0]+L.h[1])/Math.max(1,L.h.reduce((a,b)=>a+b,0));
+  let kind="flat";
+  if(tot>=3){const bs=bad/Math.max(1,good+bad);kind=bs>=Math.max(.35,allBad+.12)?"bad":good>bad?"good":"bad"}
+  return {days:Math.min(days,30),realDays:days,good,bad,mid,tot,kind};
+}
+function trendTxt(t){if(!t)return "";if(t.wait)return `評論追蹤中（${t.since.slice(5).replace("-","/")} 起，滿 7 天後顯示）`;
+  const span=t.realDays>=30?"近 1 個月":`近 ${t.realDays} 天`;
+  if(t.kind==="flat")return `${span}新評論很少（${t.tot} 則）`;
+  return `${span}新評論：好評 +${t.good}、負評 +${t.bad}${t.mid?`、普通 +${t.mid}`:""}`}
+const CLOSE_RE=/(?<!曾)暫停營業|暫時關閉|停止營業|已歇業|可能已?歇業|可能已?停業|是否已?停業|是否已?歇業|結束營業|永久停業/;
+function closedWarn(r){
+  if(r._cw!==undefined)return r._cw;if(r.cw)return r._cw=r.cw;
+  const t=[r.name,r.verdict,r.notes,r.hours_note,...(r.cons||[])].join(" ");
+  const m=t.match(CLOSE_RE);
+  if(m)return r._cw=/暫停|暫時/.test(m[0])?"暫停營業":"可能已歇業";
+  const h=r.hours;if(h&&WD.every(k=>h[k]&&/公休|休息/.test(h[k])))return r._cw="可能已歇業";
+  return r._cw="";
+}
+function badges(r){
+  if(r._bd&&r._bdK===_nowT)return r._bd;
+  const b=[],rc=r.review_count||0,g=r.google_rating||0;
+  const cw=closedWarn(r);if(cw)b.push(["closed","⚠️ "+cw+"？出發前確認"]);
+  const tr=trend(r);
+  if(tr&&!tr.wait&&tr.kind==="good")b.push(["up",`👍 ${tr.realDays>=30?"近月":"近期"}好評多 +${tr.good}`]);
+  if(tr&&!tr.wait&&tr.kind==="bad")b.push(["down",`⚠️ ${tr.realDays>=30?"近月":"近期"}負評多 +${tr.bad}`]);
+  const vr=viral(r);if(vr&&vr.hot)b.push(["viral",`🚀 爆紅中 +${vr.d.toLocaleString()} 則`]);
+  if(rc>=5000)b.push(["hot","🔥 人氣爆棚"]);
+  if(g>=4.6&&rc>=100&&rc<800)b.push(["gem","💎 隱藏版好店"]);
+  if(r.sponsor_risk==="低")b.push(["real","✅ 真心推"]);
+  if(r.service==="吃到飽")b.push(["ayce","🍽️ 吃到飽"]);
+  if(lateNight(r))b.push(["late","🌙 宵夜場"]);
+  if(priceLo(r.price)<=150)b.push(["cp","💰 銅板價"]);
+  if(r.visited)b.push(["done","✓ 我吃過"]);
+  r._bdK=_nowT;return r._bd=b;
+}
+function coverHtml(r,big){
+  const t=TINT[r.category]||3,[g1,g2]=GRAD[t],ph=r.photos||[],e=EMO[r.category]||"🍴";
+  const rcN=(viral(r)?.n)??r.review_count;const rate=r.google_rating!=null?`<span class="rate">★ ${Number(r.google_rating).toFixed(1)}<small>${rcN!=null?kfmt(rcN)+" 則":""}</small></span>`:"";
+  return `<div class="cover${ph.length?" has-ph":""}" style="--g1:${g1};--g2:${g2}">${ph.length?`<img src="${blob(ph[0].id)}" alt="${esc(ph[0].dish||r.name)}" loading="lazy">`:`<span class="emo" aria-hidden="true">${e}</span><span class="emo e2" aria-hidden="true">${e}</span><span class="emo e3" aria-hidden="true">${e}</span>`}
+    <span class="catp">${e} ${esc(r.category)}</span>${rate}
+    ${r.award_500?`<span class="b500">🏆 500碗・${r.award_500.bowls||1}碗</span>`:""}</div>`;
+}
+function card(r){
+  const big=isBig(r),st=status(r),bd=badges(r);
+  return `<article class="card ig${big?" big":""}${r.visited?" visited":""}${closedWarn(r)?" isclosed":""}" data-open="${esc(r._id)}" tabindex="0" aria-label="${esc(r.name)}，看詳細">
+  ${coverHtml(r,big)}
+  <div class="cb">
+    <h3 class="c-name">${esc(r.name)}</h3>
+    <div class="where"><span>📍 ${esc(r.district)}</span>${r.price&&priceLo(r.price)<1e9?`<span>💵 ${esc(r.price)}</span>`:""}<span class="open ${st.cls}">${st.txt}</span></div>
+    ${bd.length?`<div class="bdg">${bd.slice(0,big?5:3).map(([c,t])=>`<span class="bd ${c}">${t}</span>`).join("")}</div>`:""}
+    ${r.verdict?`<p class="verdict q">${esc(r.verdict)}</p>`:""}
+    ${(r.signature||[]).length?`<div class="hash">${r.signature.slice(0,big?5:3).map(x=>`<span>#${esc(x)}</span>`).join("")}</div>`:""}
+    ${(r.my_rating||r.my_note)?`<div class="mine">📝 ${r.my_rating?`我的評分 ${esc(r.my_rating)}／5　`:""}${esc(r.my_note||"")}</div>`:""}
+    <div class="cf"><span class="risk">業配風險 <b class="stamp ${esc(r.sponsor_risk||"中")}">${esc(r.sponsor_risk||"?")}</b></span>${footHtml(r)}</div>
+  </div></article>`;
+}
+function detail(r){
+  const alt=(r.alt_ratings||[]).filter(a=>a.rating!=null);
+  const li=a=>(a||[]).map(x=>`<li>${esc(x)}</li>`).join("");
+  const ph=r.photos||[];
+  return `<button type="button" class="btn x" id="detClose" aria-label="關閉">✕ 關閉</button>
+  <div class="detcover">${coverHtml(r,true)}</div>
+  ${badges(r).length?`<div class="bdg">${badges(r).map(([c,t])=>`<span class="bd ${c}">${t}</span>`).join("")}</div>`:""}
+  ${ph.length?`<div class="strip">${ph.map(p=>`<button type="button" data-view="${esc(r._id)}|${esc(p.id)}" aria-label="放大照片${p.dish?"："+esc(p.dish):""}"><img src="${blob(p.id)}" alt="${esc(p.dish||r.name)}" loading="lazy"></button>`).join("")}</div>`:""}
+  <div class="cat-k" style="font-size:12px;letter-spacing:.14em;font-weight:700;color:var(--hk)">${esc(r.category)}・${esc(r.city)} ${esc(r.district)}</div>
+  <div class="c-head"><h2 class="c-name">${esc(r.name)}</h2><div class="score">${ratingHtml(r)}</div></div>
+  ${bowlHtml(r)}${tagsHtml(r)}
+  ${r.closed_days?`<div class="closedline"><span>公休　</span>${esc(r.closed_days)}</div>`:""}
+  ${closedWarn(r)?`<div class="cwarn">⚠️ 這家店${closedWarn(r)==="暫停營業"?"可能暫停營業中":"可能已經歇業"}（依店名、評論或營業時間判斷），出發前請先打電話確認。</div>`:""}
+  ${(t=>t?`<div class="trend ${t.kind||""}">📈 ${esc(trendTxt(t))}</div>`:"")(trend(r))}
+  ${(v=>v?`<div class="trend">🚀 近 ${v.days} 天評論 ${v.d>=0?"+":""}${v.d.toLocaleString()} 則（約每週 +${v.wk}，成長 ${(v.rel*100).toFixed(1)}%）${v.hot?"・短線爆紅":""}</div>`:"")(viral(r))}
+  ${r.verdict?`<p class="verdict">${esc(r.verdict)}</p>`:""}
+  ${r.price?`<div class="price">${esc(r.price)}</div>`:""}
+  ${(r.signature||[]).length?`<div class="sig"><span>招牌　</span>${esc(r.signature.join("、"))}</div>`:""}
+  ${(r.my_rating||r.my_note)?`<div class="mine">${r.my_rating?`我的評分 ${esc(r.my_rating)}／5　`:""}${esc(r.my_note||"")}</div>`:""}
+  <div class="pc"><div class="p"><h4>優點</h4><ul>${li(r.pros)}</ul></div><div class="c"><h4>缺點</h4><ul>${li(r.cons)}</ul></div></div>
+  <div class="kv">${alt.length?`<div><span>其他平台評分　</span>${alt.map(a=>`<a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.platform)} ${Number(a.rating).toFixed(1)}${a.count!=null?"（"+a.count+" 則）":""}</a>`).join("、")}</div>`:""}${r.sponsor_note?`<div><span>業配判斷　</span>${esc(r.sponsor_note)}</div>`:""}${r.address?`<div><span>地址　</span>${esc(r.address)}</div>`:""}${r.notes?`<div><span>備註　</span>${esc(r.notes)}</div>`:""}</div>
+  ${(r.sources||[]).length?`<div class="src kv"><span>來源</span><ul>${r.sources.map(s=>`<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title||s.url)}</a></li>`).join("")}</ul></div>`:""}
+  ${hoursBlock(r)}
+  ${menuBlock(r)}
+  ${footHtml(r,true)}`;
+}
+const det=$("#det");let detId=null;
+const detCache={};
+async function loadDet(r){if(r._dl)return;const f=r.f;if(!detCache[f])detCache[f]=fetch("data/d/"+f+".json").then(x=>x.json()).catch(()=>({}));const all=await detCache[f];Object.assign(r,all[r._id]||{});r._dl=true;delete r._dt}
+async function openDet(id){const r=items.find(x=>x._id===id);if(!r)return;detId=id;
+  if(!r._dl){$("#detBody").innerHTML='<p style="padding:20px">讀取中…</p>';if(!det.open)det.showModal();await loadDet(r);if(detId!==id)return}
+  $("#detBody").innerHTML=detail(r);$("#detClose").onclick=()=>det.close();if(!det.open)det.showModal()}
+det.addEventListener("close",()=>{detId=null});
+det.addEventListener("click",e=>{if(e.target===det){det.close();return}handleAct(e)});
+
+async function handleAct(e){
+  const v=e.target.closest("[data-visit]"),ed=e.target.closest("[data-edit]");
+  if(v){const r=items.find(x=>x._id===v.dataset.visit);if(!r)return;v.disabled=true;
+    try{await db.collection("restaurants").doc(r._id).update({visited:!r.visited});}catch(err){toast("更新失敗："+(err.code||""))}}
+  if(ed)openEd(items.find(x=>x._id===ed.dataset.edit));
+  const pb=e.target.closest("[data-ph]");if(pb)openPh(items.find(x=>x._id===pb.dataset.ph));
+  const vw=e.target.closest("[data-view]");if(vw){e.preventDefault();const[rid,pid]=vw.dataset.view.split("|");openLb(rid,pid)}
+  return !!(v||ed||pb||vw);
+}
+$("#list").addEventListener("click",async e=>{
+  if(e.target.closest("a,button,input,select,summary"))return handleAct(e);
+  const c=e.target.closest("[data-open]");if(c)openDet(c.dataset.open);
+});
+$("#list").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-open]")){e.preventDefault();openDet(e.target.dataset.open)}});
+$("#moreBtn").onclick=()=>{shown+=60;render()};
+$("#stOpenBtn").onclick=()=>{F.now=!F.now;saveF();render()};
+$("#stViralBtn").onclick=()=>{F.zone=F.zone==="viral"?"":"viral";saveF();render()};
+const fdlg=$("#fdlg");$("#fMore").onclick=()=>fdlg.showModal();$("#fdClose").onclick=()=>fdlg.close();fdlg.addEventListener("click",e=>{if(e.target===fdlg)fdlg.close()});
+$("#fReset").onclick=()=>{Object.assign(F,{zone:"",dish:"",cui:"",svc:"",low:false,noChain:false,noClosed:false,visited:false,today:false,now:false,cat:""});saveF();render()};
+
+/* ---- photos ---- */
+const phDlg=$("#phDlg"), lb=$("#lb");
+function openPh(r){if(!r)return;phTarget=r;$("#phTitle").textContent="加照片｜"+r.name;$("#phFile").value="";$("#phDish").value="";$("#phErr").hidden=true;
+  $("#dishList").innerHTML=uniq((r.menu||[]).flatMap(s=>(s.items||[]).map(i=>i.name))).map(n=>`<option value="${esc(n)}">`).join("");phDlg.showModal()}
+$("#phCancel").onclick=()=>phDlg.close();
+async function shrink(file){
+  try{const bmp=await createImageBitmap(file);const k=Math.min(1,1600/Math.max(bmp.width,bmp.height));
+    const c=document.createElement("canvas");c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);c.getContext("2d").drawImage(bmp,0,0,c.width,c.height);
+    return await new Promise(res=>c.toBlob(b=>res(b||file),"image/jpeg",0.82));}catch(e){return file}
+}
+$("#phForm").onsubmit=async e=>{
+  e.preventDefault();const files=[...$("#phFile").files];if(!files.length||!phTarget)return;
+  const btn=$("#phSave"),err=$("#phErr");btn.disabled=true;err.hidden=true;const dish=$("#phDish").value.trim();const added=[];
+  try{
+    for(const [n,f] of files.entries()){btn.textContent=`上傳中 ${n+1}/${files.length}`;
+      const b=await shrink(f);const res=await assets.upload(b,{type:b.type&&/^image\/(jpeg|png|gif|webp)$/.test(b.type)?b.type:"image/jpeg"});
+      added.push({id:res.id,dish,at:new Date().toISOString().slice(0,10)});}
+    const cur=items.find(x=>x._id===phTarget._id)||phTarget;
+    await db.collection("restaurants").doc(cur._id).update({photos:[...(cur.photos||[]),...added]});
+    phDlg.close();toast(`已加入 ${added.length} 張照片`);
+  }catch(x){err.hidden=false;err.textContent={too_large:"照片太大（上限 20MB），請換一張。",unsupported_type:"這個檔案格式不支援，請用 JPG、PNG 或 WebP。",quota_or_state:"照片儲存空間已滿。",rate_limited:"上傳太頻繁，稍等一下再試。"}[x?.code]||"上傳失敗（"+(x?.code||"未知錯誤")+"），請稍後再試。";
+    if(added.length){const cur=items.find(y=>y._id===phTarget._id)||phTarget;try{await db.collection("restaurants").doc(cur._id).update({photos:[...(cur.photos||[]),...added]})}catch(_){}}}
+  finally{btn.disabled=false;btn.textContent="上傳"}
+};
+function openLb(rid,pid){
+  const r=items.find(x=>x._id===rid);const p=(r?.photos||[]).find(x=>x.id===pid);if(!p)return;
+  $("#lbImg").src=blob(p.id);$("#lbImg").alt=p.dish||r.name;$("#lbCap").textContent=`${r.name}${p.dish?"｜"+p.dish:""}${p.at?"｜"+p.at:""}`;
+  const act=$("#lbAct");
+  const base=()=>{act.innerHTML=`${assets?`<button type="button" class="btn danger" id="lbDel">刪除照片</button>`:""}<button type="button" class="btn" id="lbClose">關閉</button>`;
+    $("#lbClose").onclick=()=>lb.close();
+    if(assets)$("#lbDel").onclick=()=>{act.innerHTML=`<span class="confirm">確定刪除這張照片？<button type="button" class="btn danger" id="lbYes">刪除</button><button type="button" class="btn" id="lbNo">保留</button></span>`;
+      $("#lbNo").onclick=base;
+      $("#lbYes").onclick=async()=>{try{await db.collection("restaurants").doc(r._id).update({photos:(r.photos||[]).filter(x=>x.id!==p.id)});
+        try{await assets.delete(p.id)}catch(_){}lb.close();toast("已刪除照片")}catch(x){toast("刪除失敗："+(x?.code||""))}}}};
+  base();lb.showModal();
+}
+lb.addEventListener("click",e=>{if(e.target===lb)lb.close()});
+["fCity","fDist","fSort"].forEach(id=>$("#"+id).onchange=e=>{const k={fCity:"city",fDist:"dist",fSort:"sort"}[id];F[k]=e.target.value;if(id==="fCity")F.dist="";saveF();render()});
+let qT=0;
+$("#fQ").oninput=e=>{F.q=e.target.value;clearTimeout(qT);qT=setTimeout(render,220)};
+$("#fabGo").onclick=()=>{const smooth=!matchMedia("(prefers-reduced-motion: reduce)").matches;scrollTo({top:0,behavior:smooth?"smooth":"auto"});const q=$("#fQ");setTimeout(()=>{q.focus({preventScroll:true});q.select()},smooth?350:0)};
+$("#fLow").onchange=e=>{F.low=e.target.checked;saveF();render()};
+$("#fVisited").onchange=e=>{F.visited=e.target.checked;saveF();render()};
+$("#fNoChain").onchange=e=>{F.noChain=e.target.checked;saveF();render()};
+$("#fNoClosed").onchange=e=>{F.noClosed=e.target.checked;saveF();render()};
+$("#fToday").onchange=e=>{F.today=e.target.checked;saveF();render()};
+$("#fNow").onchange=e=>{F.now=e.target.checked;saveF();render()};
+setInterval(()=>{if(F.now&&!document.querySelector("details[open]")&&!dlg.open&&!det.open)render()},60000);
+
+const dlg=$("#dlg");
+const HIDS=WD.map(k=>"h_"+k);
+const ids=[...HIDS,"closed","hoursNote","name","city","district","category","cuisine","service","price","rating","reviews","risk","sig","riskNote","verdict","pros","cons","address","phone","notes","sources","menu","menuNote","menuUpd","my","myNote"];
+function openEd(r){
+  editing=r||null;$("#edTitle").textContent=r?"編輯店家":"新增店家";$("#edErr").hidden=true;
+  const v={name:r?.name,city:r?.city||F.city,district:r?.district||F.dist,category:r?.category||F.cat,cuisine:r?.cuisine||F.cui,service:r?.service||F.svc||"單點",price:r?.price,
+    rating:r?.google_rating??"",reviews:r?.review_count??"",risk:r?.sponsor_risk||"低",sig:(r?.signature||[]).join("、"),riskNote:r?.sponsor_note,verdict:r?.verdict,
+    pros:(r?.pros||[]).join("\n"),cons:(r?.cons||[]).join("\n"),address:r?.address,phone:r?.phone,notes:r?.notes,sources:(r?.sources||[]).map(s=>`${s.title} | ${s.url}`).join("\n"),menu:menuToText(r?.menu),closed:r?.closed_days,hoursNote:r?.hours_note,...Object.fromEntries(WD.map(k=>["h_"+k,r?.hours?.[k]??""])),menuNote:r?.menu_note,menuUpd:r?.menu_updated,my:r?.my_rating??"",myNote:r?.my_note};
+  ids.forEach(k=>$("#e_"+k).value=v[k]??"");$("#e_visited").checked=!!r?.visited;
+  const dz=$("#delZone");dz.innerHTML=r?`<button type="button" class="btn danger" id="delBtn">刪除</button>`:"";
+  if(r)$("#delBtn").onclick=()=>{dz.innerHTML=`<span class="confirm">確定刪除「${esc(r.name)}」？<button type="button" class="btn danger" id="delYes">刪除</button><button type="button" class="btn" id="delNo">保留</button></span>`;
+    $("#delNo").onclick=()=>openEd(r);
+    $("#delYes").onclick=async()=>{try{await db.collection("restaurants").doc(r._id).delete();dlg.close();toast("已刪除")}catch(err){toast("刪除失敗："+(err.code||""))}}};
+  dlg.showModal();
+}
+$("#addBtn").onclick=()=>openEd(null);
+$("#cancelBtn").onclick=()=>dlg.close();
+$("#edForm").onsubmit=async e=>{
+  e.preventDefault();
+  const g=k=>$("#e_"+k).value.trim(), lines=k=>g(k).split("\n").map(s=>s.trim()).filter(Boolean), num=k=>g(k)===""?null:Number(g(k));
+  const doc={...(editing?Object.fromEntries(Object.entries(editing).filter(([k])=>k!=="_id")):{origin:"manual"}),
+    name:g("name"),city:g("city"),district:g("district"),category:g("category"),cuisine:g("cuisine"),service:$("#e_service").value,price:g("price"),
+    google_rating:num("rating"),review_count:num("reviews"),sponsor_risk:$("#e_risk").value,sponsor_note:g("riskNote"),verdict:g("verdict"),
+    signature:g("sig").split(/[、,，]/).map(s=>s.trim()).filter(Boolean),pros:lines("pros"),cons:lines("cons"),address:g("address"),phone:g("phone")||null,notes:g("notes"),
+    sources:lines("sources").map(l=>{const[t,u]=l.split("|").map(s=>s.trim());return u?{title:t,url:u}:{title:t,url:t}}),
+    hours:Object.fromEntries(WD.map(k=>[k,g("h_"+k)||null])),closed_days:g("closed"),hours_note:g("hoursNote"),
+    menu:textToMenu($("#e_menu").value),menu_note:g("menuNote"),menu_updated:g("menuUpd"),
+    my_rating:num("my"),my_note:g("myNote"),visited:$("#e_visited").checked,updated:new Date().toISOString().slice(0,10)};
+  const id=editing?._id||("u"+Date.now().toString(36));
+  $("#saveBtn").disabled=true;
+  try{await db.collection("restaurants").doc(id).set(doc);dlg.close();toast(editing?"已儲存變更":"已新增店家");}
+  catch(err){const x=$("#edErr");x.hidden=false;x.textContent="儲存失敗（"+(err.code||"未知錯誤")+"），請稍後再試。";}
+  finally{$("#saveBtn").disabled=false}
+};
+
+
+let delDone=[],patchDone=[],importDone=[],importPos={},metaLoaded=false,itemsLoaded=false,importing=false,importStarted=false;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function updRetry(ref,data){
+  for(let k=0;;k++){
+    try{await ref.update(data);return}
+    catch(e){const c=e&&e.code;
+      if(c==="resource_exhausted"){await sleep(Math.min(60000,4000*(k+1)));continue}
+      if(c==="unavailable"&&k<20){await sleep(1500+Math.random()*1500);continue}
+      if(c==="invalid_argument"||c==="not_found")return;
+      throw e}
+  }
+}
+async function setRetry(ref,data){
+  for(let k=0;;k++){
+    try{await ref.set(data);return}
+    catch(e){
+      const c=e&&e.code;
+      if(c==="resource_exhausted"){await sleep(Math.min(60000,4000*(k+1)));continue}
+      if(c==="unavailable"&&k<20){await sleep(1500+Math.random()*1500);continue}
+      throw e;
+    }
+  }
+}
+function importMsg(t){const el=$("#importBar");if(el){el.hidden=!t;el.textContent=t||""}}
+async function maybeImport(){
+  if(importStarted||!canWrite||!db||!metaLoaded||!itemsLoaded)return;
+  importStarted=true;importing=true;
+  let n=0,total=0;
+  try{
+    const res=await fetch("imp/manifest.json",{cache:"no-store"});if(!res.ok)return;
+    const mf=await res.json();const todo=(mf.files||[]).filter(f=>!importDone.includes(f));
+    const ptodo=(mf.patch||[]).filter(f=>!patchDone.includes(f));
+    const dtodo=(mf.del||[]).filter(f=>!delDone.includes(f));
+    if(!todo.length&&!ptodo.length&&!dtodo.length)return;
+    const have=new Set(items.map(r=>r._id));
+    const files=[];
+    for(const f of todo){
+      const data=await (await fetch("imp/"+f,{cache:"no-store"})).json();
+      const start=importPos[f]||0;
+      const ids=Object.keys(data).slice(start).filter(id=>!have.has(id));
+      files.push({f,data,ids,start});total+=ids.length;
+    }
+    const meta=db.collection("meta").doc("import");
+    for(const {f,data,ids} of files){
+      const all=Object.keys(data);
+      for(let i=0;i<ids.length;i++){
+        const id=ids[i];
+        await setRetry(db.collection("restaurants").doc(id),data[id]);
+        have.add(id);n++;
+        importMsg("正在加入新店家…已加入 "+n+" / "+total+" 家，請保持頁面開啟");
+        if(n%25===0){importPos={...importPos,[f]:all.indexOf(id)+1};await setRetry(meta,{done:importDone,pos:importPos,pdone:patchDone,ddone:delDone})}
+        await sleep(120);
+      }
+      importDone=[...importDone,f];const p={...importPos};delete p[f];importPos=p;
+      await setRetry(meta,{done:importDone,pos:importPos,pdone:patchDone,ddone:delDone});
+    }
+    let m=0;
+    for(const f of ptodo){
+      const data=await (await fetch("imp/"+f,{cache:"no-store"})).json();
+      const ids=Object.keys(data);
+      for(const id of ids){
+        await updRetry(db.collection("restaurants").doc(id),data[id]);m++;
+        importMsg("正在補菜單…已更新 "+m+" 家，請保持頁面開啟");await sleep(120);
+      }
+      patchDone=[...patchDone,f];
+      await setRetry(meta,{done:importDone,pos:importPos,pdone:patchDone,ddone:delDone});
+    }
+    for(const f of dtodo){
+      const data=await (await fetch("imp/"+f,{cache:"no-store"})).json();
+      for(const id of data.ids||[]){try{await db.collection("restaurants").doc(id).delete()}catch(e){if(e&&e.code==="resource_exhausted"){await sleep(8000);try{await db.collection("restaurants").doc(id).delete()}catch(_){}}}await sleep(150)}
+      delDone=[...delDone,f];
+      await setRetry(meta,{done:importDone,pos:importPos,pdone:patchDone,ddone:delDone});
+    }
+    if(m)toast("已更新 "+m+" 家資料");
+    importMsg("");
+    if(n)toast("已加入 "+n+" 家新店家");
+  }catch(err){console.log("import",err);importMsg("加入新店家暫停（"+(err&&err.code||"錯誤")+"），重新整理頁面即可接續，已加入 "+n+" 家")}
+  finally{importing=false;render()}
+}
+render();
+(async()=>{
+  const TPY=/鐵板燒|鉄板焼|鐵板料理|鉄板料理|鉄板料亭|鐵板廚房|鐵板饌|醬燒鐵板|鐵板食堂|teppan/i;
+  try{
+    const res=await fetch("data/index.json");const js=await res.json();
+    items=js.items.map(r=>{if(r.category!=="鐵板燒"&&(TPY.test(r.name||"")||/鐵板/.test(r.google_category||"")))r.category="鐵板燒";return r});
+    itemsVer++;itemsLoaded=true;$("#built").textContent=js.built||"";render();
+  }catch(e){$("#count").textContent="資料讀取失敗，請重新整理。"}
+})();
+</script>
+
+</body></html>
