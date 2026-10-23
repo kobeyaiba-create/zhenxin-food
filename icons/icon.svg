@@ -3,28 +3,40 @@
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#ff6a3d"/><stop offset="0.6" stop-color="#ff5a7a"/><stop offset="1" stop-color="#ffb14a"/>
     </linearGradient>
-    <linearGradient id="bowl" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ffe8dc"/>
+    <linearGradient id="tea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3d3a8"/><stop offset="1" stop-color="#d59a5e"/>
     </linearGradient>
+    <linearGradient id="cut" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffc94a"/><stop offset="1" stop-color="#e08a1e"/>
+    </linearGradient>
+    <clipPath id="cup"><path d="M300 170h140l-16 262c-1 14-12 24-26 24h-56c-14 0-25-10-26-24z"/></clipPath>
   </defs>
   <rect width="512" height="512" fill="url(#bg)"/>
-  <!-- steam -->
-  <g fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" opacity=".9">
-    <path d="M196 150c-20-24 20-44 0-72"/>
-    <path d="M256 140c-20-24 20-44 0-72"/>
-    <path d="M316 150c-20-24 20-44 0-72"/>
+  <!-- straw -->
+  <rect x="372" y="60" width="22" height="150" rx="11" transform="rotate(12 383 135)" fill="#3a2200"/>
+  <!-- cup -->
+  <path d="M300 170h140l-16 262c-1 14-12 24-26 24h-56c-14 0-25-10-26-24z" fill="#fff" opacity=".35"/>
+  <g clip-path="url(#cup)">
+    <rect x="290" y="210" width="160" height="260" fill="url(#tea)"/>
+    <g fill="#3a2200">
+      <circle cx="330" cy="420" r="15"/><circle cx="365" cy="430" r="15"/><circle cx="400" cy="420" r="15"/>
+      <circle cx="345" cy="395" r="15"/><circle cx="385" cy="398" r="15"/><circle cx="318" cy="392" r="13"/><circle cx="415" cy="392" r="13"/>
+    </g>
   </g>
-  <!-- chopsticks -->
-  <g stroke="#3a2200" stroke-width="14" stroke-linecap="round">
-    <line x1="300" y1="250" x2="430" y2="118"/>
-    <line x1="322" y1="258" x2="452" y2="138"/>
+  <path d="M300 170h140l-16 262c-1 14-12 24-26 24h-56c-14 0-25-10-26-24z" fill="none" stroke="#fff" stroke-width="10" stroke-linejoin="round"/>
+  <rect x="288" y="150" width="164" height="30" rx="12" fill="#fff"/>
+  <!-- chicken cutlet (bumpy crust) sticking out of paper bag -->
+  <path d="M64 196 q-8-30 18-44 q6-28 36-28 q14-24 42-16 q24-18 48-2 q30-6 42 20 q30 4 34 34 q22 18 8 44 L260 330 L76 330 q-24-20-14-50 q-18-22 2-44 q-14-22 0-40z" fill="url(#cut)"/>
+  <path d="M64 196 q-8-30 18-44 q6-28 36-28 q14-24 42-16 q24-18 48-2 q30-6 42 20 q30 4 34 34 q22 18 8 44" fill="none" stroke="#c96f10" stroke-width="8" stroke-linecap="round"/>
+  <g fill="#fff0b8" opacity=".85">
+    <circle cx="110" cy="190" r="7"/><circle cx="150" cy="165" r="6"/><circle cx="200" cy="170" r="8"/><circle cx="235" cy="205" r="6"/>
+    <circle cx="130" cy="235" r="8"/><circle cx="180" cy="220" r="6"/><circle cx="220" cy="250" r="7"/><circle cx="100" cy="270" r="6"/><circle cx="160" cy="275" r="7"/>
   </g>
-  <!-- noodles peeking -->
-  <path d="M130 262c40-26 80 10 126-10s86-18 126 10" fill="none" stroke="#ffd23f" stroke-width="22" stroke-linecap="round"/>
-  <!-- bowl -->
-  <path d="M96 258h320c0 98-70 168-160 168S96 356 96 258z" fill="url(#bowl)"/>
-  <rect x="96" y="246" width="320" height="26" rx="13" fill="#fff"/>
-  <path d="M206 424h100l-10 26h-80z" fill="#fff"/>
-  <!-- heart badge (真心) -->
-  <path d="M256 384c-36-26-58-46-58-70 0-16 12-28 28-28 13 0 23 8 30 18 7-10 17-18 30-18 16 0 28 12 28 28 0 24-22 44-58 70z" fill="#ff5a3c"/>
+  <g fill="#7a3d0c" opacity=".7">
+    <circle cx="125" cy="205" r="3.5"/><circle cx="175" cy="195" r="3"/><circle cx="210" cy="225" r="3.5"/><circle cx="145" cy="255" r="3"/><circle cx="195" cy="265" r="3.5"/><circle cx="240" cy="240" r="3"/><circle cx="105" cy="240" r="3"/>
+  </g>
+  <!-- paper bag -->
+  <path d="M60 300 h214 l-18 160 h-178z" fill="#fff"/>
+  <rect x="60" y="300" width="214" height="22" fill="#ffd23f"/>
+  <path d="M167 438c-22-16-36-28-36-42 0-10 8-17 17-17 8 0 14 5 19 11 4-6 11-11 19-11 9 0 17 7 17 17 0 14-14 26-36 42z" fill="#ff5a3c"/>
 </svg>
