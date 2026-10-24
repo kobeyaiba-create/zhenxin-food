@@ -296,6 +296,9 @@ h1,.c-name,.t-stat b,.det-in .c-name{font-family:var(--display);font-weight:400;
 .trend.good{background:var(--ok-soft);color:var(--ok)}.trend.bad{background:var(--bad-soft);color:var(--bad)}
 .bd.viral{background:linear-gradient(90deg,#ff5a3c,#ff7aa8);color:#fff}
 .zone.viralz{background:linear-gradient(135deg,#fff0e8,#ffe6f0);border-color:#ffb3a0}.zone.viralz h2{color:#d63a1c}
+.cover .bmich{position:absolute;right:12px;top:12px;background:#b3001b;color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;transform:rotate(-3deg);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.cover .bmich.low{top:40px}
+.zone.michz{background:linear-gradient(135deg,#fff1f1,#ffe9e0);border-color:#f3a3a3}.zone.michz h2{color:#b3001b}
 .bd.hot{background:#ffe1d6;color:#c2300f}.bd.gem{background:#e9e3ff;color:#5a3fd6}.bd.real{background:#d9f5ea;color:#0d7a5b}
 .bd.ayce{background:#fff0c2;color:#8a5a00}.bd.late{background:#dde6ff;color:#2f3f9a}.bd.cp{background:#e6f7d4;color:#3f7a12}.bd.done{background:var(--ink);color:var(--bg)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .bd:not(.done){background:color-mix(in srgb,currentColor 18%,transparent);filter:brightness(1.6)}}
@@ -448,6 +451,11 @@ body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
 
   <div id="importBar" hidden style="margin:8px 0;padding:8px 12px;border-radius:8px;background:var(--accent-soft,#fff3d6);color:var(--ink,#222);font-size:14px"></div>
   <div class="meta"><span id="count">正在讀取店家資料…</span><span>評分、價格為整理時的網路資料，出發前請再確認</span></div>
+  <div class="zone michz" id="michBanner" hidden>
+    <h2>⭐ 米其林指南 2026</h2>
+    <p>《臺灣米其林指南 2026》台中、新竹的星級、必比登推介與入選餐廳（2026 年 7 月公布）。依「星級 → 必比登 → 入選」排序，🌿 為米其林綠星（永續美食）。</p>
+    <p class="hint">名單依公開新聞報導整理，少數店家因同名或尚未收錄，可能未列出；以米其林官方網站為準。</p>
+  </div>
   <div class="zone viralz" id="viralBanner" hidden>
     <h2>🚀 短線爆紅店</h2>
     <p>比較每家店最近一次與約 30 天前（資料不足 30 天時用最早一筆）的 Google 評論數，挑出評論數暴增的店：每週新增 25 則以上且成長 4% 以上，或成長 12% 以上（至少新增 15 則）。依「成長幅度 × 增加速度」排序。</p>
@@ -656,7 +664,7 @@ function render(){lastRender=Date.now();
   const cnt=(arr,k,v)=>arr.filter(r=>r[k]===v).length;
   const cats=uniq([...BASE_CATS,...items.map(r=>r.category)]);
   renderDish(base);
-  chips($("#fZone"),[["","全部"],["viral","🚀 短線爆紅",base.filter(r=>viral(r)?.hot).length],["b500","500碗 2026",base.filter(r=>r.award_500).length]],"zone");
+  chips($("#fZone"),[["","全部"],["viral","🚀 短線爆紅",base.filter(r=>viral(r)?.hot).length],["mich","⭐ 米其林 2026",base.filter(r=>r.michelin).length],["b500","500碗 2026",base.filter(r=>r.award_500).length]],"zone");
   chips($("#fCat"),[["","🍴 全部",base.length],...cats.map(c=>[c,(EMO[c]||"🍴")+" "+c,cnt(base,"category",c)])],"cat");
   const cuis=uniq([...BASE_CUI.filter(c=>base.some(r=>r.cuisine===c)),...base.map(r=>r.cuisine)]);
   chips($("#fCui"),[["","全部"],...cuis.map(c=>[c,c,cnt(base,"cuisine",c)])],"cui");
@@ -667,19 +675,19 @@ function render(){lastRender=Date.now();
   $("#cuiList").innerHTML=uniq([...BASE_CUI,...items.map(r=>r.cuisine)]).map(c=>`<option value="${esc(c)}">`).join("");
 
   const q=F.q.trim().toLowerCase();
-  let rows=base.filter(r=>(F.zone!=="b500"||r.award_500)&&(F.zone!=="viral"||viral(r)?.hot)&&(!F.dish||hasDish(r,F.dish))&&(!F.cat||r.category===F.cat)&&(!F.cui||r.cuisine===F.cui)&&(!F.svc||r.service===F.svc)&&(!F.low||r.sponsor_risk==="低")&&(!F.visited||r.visited)&&(!F.noChain||!isChain(r))&&(!F.noClosed||!closedWarn(r))&&(!F.today||status(r).today===true)&&(!F.now||status(r).open)
+  let rows=base.filter(r=>(F.zone!=="b500"||r.award_500)&&(F.zone!=="viral"||viral(r)?.hot)&&(F.zone!=="mich"||r.michelin)&&(!F.dish||hasDish(r,F.dish))&&(!F.cat||r.category===F.cat)&&(!F.cui||r.cuisine===F.cui)&&(!F.svc||r.service===F.svc)&&(!F.low||r.sponsor_risk==="低")&&(!F.visited||r.visited)&&(!F.noChain||!isChain(r))&&(!F.noClosed||!closedWarn(r))&&(!F.today||status(r).today===true)&&(!F.now||status(r).open)
     &&(!q||(r._q??=[r.name,r.address,r.mk,r.verdict,...(r.signature||[]),...(r.menu||[]).flatMap(s=>(s.items||[]).map(i=>i.name))].join(" ").toLowerCase()).includes(q)));
   const altR=x=>{const a=(x.alt_ratings||[]).find(a=>a.rating!=null);return a?a.rating/10-1:-2};
   const s={rating:(a,b)=>(b.google_rating??altR(b))-(a.google_rating??altR(a))||(b.review_count??0)-(a.review_count??0),
     reviews:(a,b)=>(b.review_count??-1)-(a.review_count??-1),priceLo:(a,b)=>priceLo(a.price)-priceLo(b.price),name:(a,b)=>a.name.localeCompare(b.name,"zh-Hant")}[F.sort];
-  rows.sort(F.zone==="b500"?(a,b)=>(b.award_500?.bowls||0)-(a.award_500?.bowls||0)||s(a,b):F.zone==="viral"?(a,b)=>viral(b).score-viral(a).score:s);
+  rows.sort(F.zone==="b500"?(a,b)=>(b.award_500?.bowls||0)-(a.award_500?.bowls||0)||s(a,b):F.zone==="viral"?(a,b)=>viral(b).score-viral(a).score:F.zone==="mich"?(a,b)=>(MT[b.michelin?.t]||0)-(MT[a.michelin?.t]||0)||s(a,b):s);
   $("#count").textContent=`${F.city}${F.dist?"・"+F.dist:""}：符合 ${rows.length} 家（共 ${items.length} 家）`;
   const sig=JSON.stringify(F);
   $("#stMatch").textContent=rows.length.toLocaleString();$("#stAll").textContent=`${F.city}${F.dist?"・"+F.dist:""}・共 ${items.length.toLocaleString()} 家`;
   $("#stOpen").textContent=base.filter(r=>status(r).open).length.toLocaleString();$("#stOpenTxt").textContent=F.now?"✓ 已篩選・點我取消":"點我只看營業中";$("#stOpenBtn").classList.toggle("on",!!F.now);
   $("#stViral").textContent=base.filter(r=>viral(r)?.hot).length.toLocaleString();$("#stViralTxt").textContent=F.zone==="viral"?"✓ 已篩選・點我取消":"點我看爆紅店";$("#stViralBtn").classList.toggle("on",F.zone==="viral");
   const fc=[F.zone,F.dish,F.cui,F.svc,F.low,F.noChain,F.noClosed,F.visited,F.today,F.now].filter(Boolean).length;$("#fCnt").textContent=fc?" "+fc:"";$("#fMore").classList.toggle("on",fc>0);
-  const zb=$("#zoneBanner");zb.hidden=F.zone!=="b500";$("#viralBanner").hidden=F.zone!=="viral";
+  const zb=$("#zoneBanner");zb.hidden=F.zone!=="b500";$("#viralBanner").hidden=F.zone!=="viral";$("#michBanner").hidden=F.zone!=="mich";
   if(!zb.hidden){const NOTE={"台中市":"台中共 33 家入選：3 碗 1 家、2 碗 2 家、1 碗 30 家（藍山牛肉麵已歇業，未列出）。","新竹市":"新竹（市＋縣）共 18 家入選，全部為 1 碗；新竹市的「無名麵店」因無法確認是哪一家，暫未列出。","苗栗縣":"苗栗共 15 家入選：2 碗 1 家（北苗二家合）、1 碗 14 家。","新竹縣":"新竹（市＋縣）共 18 家入選，全部為 1 碗；新竹市的「無名麵店」因無法確認是哪一家，暫未列出。"};
     const b5=inCity.filter(r=>r.award_500);$("#zoneStat").textContent=(NOTE[F.city]||"")+`目前${F.city}列出 ${b5.length} 家。`;}
   const L=$("#list");
@@ -771,6 +779,8 @@ const EMO={"拉麵":"🍜","日式料理":"🍣","排餐":"🥩","鐵板燒":"�
 const GRAD={1:["#ff8a5c","#ff5a7a"],2:["#ffc23d","#ff8a3d"],3:["#4db8ff","#3dd6b0"],4:["#ff7aa8","#ff5a3c"],5:["#3dd6b0","#a8e05f"],6:["#8b6cff","#ff7aa8"]};
 const kfmt=n=>n>=10000?(n/10000).toFixed(1).replace(/\.0$/,"")+"萬":Number(n).toLocaleString();
 function lateNight(r){const h=r.hours;if(!h)return false;const v=h[DK[tpeNow().d]];return segs(v).some(([a,b])=>b>=23*60+30)}
+const MT={s3:5,s2:4,s1:3,bib:2,sel:1};
+const MLABEL={s3:"⭐⭐⭐ 米其林三星",s2:"⭐⭐ 米其林二星",s1:"⭐ 米其林一星",bib:"😋 必比登推介",sel:"🍽️ 米其林入選"};
 function viral(r){
   if(r._vr!==undefined&&r._vrK===itemsVer)return r._vr;r._vrK=itemsVer;
   const hs=(r.hist||[]).filter(x=>x&&x.d&&(x.n!=null||Array.isArray(x.h))).map(x=>({d:x.d,n:x.n!=null?x.n:x.h.reduce((a,b)=>a+b,0)})).sort((a,b)=>a.d<b.d?-1:1);
@@ -831,7 +841,7 @@ function coverHtml(r,big){
   const rcN=(viral(r)?.n)??r.review_count;const rate=r.google_rating!=null?`<span class="rate">★ ${Number(r.google_rating).toFixed(1)}<small>${rcN!=null?kfmt(rcN)+" 則":""}</small></span>`:"";
   return `<div class="cover${ph.length?" has-ph":""}" style="--g1:${g1};--g2:${g2}">${ph.length?`<img src="${blob(ph[0].id)}" alt="${esc(ph[0].dish||r.name)}" loading="lazy">`:`<span class="emo" aria-hidden="true">${e}</span><span class="emo e2" aria-hidden="true">${e}</span><span class="emo e3" aria-hidden="true">${e}</span>`}
     <span class="catp">${e} ${esc(r.category)}</span>${rate}
-    ${r.award_500?`<span class="b500">🏆 500碗・${r.award_500.bowls||1}碗</span>`:""}</div>`;
+    ${r.award_500?`<span class="b500">🏆 500碗・${r.award_500.bowls||1}碗</span>`:""}${r.michelin?`<span class="bmich${r.award_500?" low":""}">${MLABEL[r.michelin.t]||"米其林"}${r.michelin.green?" 🌿":""}</span>`:""}</div>`;
 }
 function card(r){
   const big=isBig(r),st=status(r),bd=badges(r);
