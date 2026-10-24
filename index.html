@@ -397,6 +397,9 @@ button.t-stat.on{outline:3px solid var(--ink);outline-offset:-3px}
 }
 
 .pubfoot{max-width:1180px;margin:30px auto 90px;padding:0 16px;font-size:12px;color:var(--muted);line-height:1.7}
+dialog{overscroll-behavior:contain;overflow-y:auto;-webkit-overflow-scrolling:touch}
+dialog::backdrop{touch-action:none}
+body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
 </style>
 
 <div class="wrap">
@@ -1071,6 +1074,15 @@ render();
     items=js.items.map(r=>{if(r.category!=="鐵板燒"&&(TPY.test(r.name||"")||/鐵板/.test(r.google_category||"")))r.category="鐵板燒";return r});
     itemsVer++;itemsLoaded=true;$("#built").textContent=js.built||"";render();
   }catch(e){$("#count").textContent="資料讀取失敗，請重新整理。"}
+})();
+
+/* lock background scroll while any dialog is open (iOS-safe) */
+(function(){let y=0,locked=false;
+  const sync=()=>{const any=!!document.querySelector("dialog[open]");
+    if(any&&!locked){y=window.scrollY;document.body.style.top=(-y)+"px";document.body.classList.add("locked");locked=true}
+    else if(!any&&locked){document.body.classList.remove("locked");document.body.style.top="";window.scrollTo(0,y);locked=false}};
+  const mo=new MutationObserver(sync);
+  document.querySelectorAll("dialog").forEach(d=>{mo.observe(d,{attributes:true,attributeFilter:["open"]});d.addEventListener("close",sync)});
 })();
 </script>
 
