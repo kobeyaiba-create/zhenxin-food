@@ -561,8 +561,8 @@ body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
 const $=s=>document.querySelector(s);
 const BASE_CATS=["拉麵","日式料理","排餐","鐵板燒","火鍋","韓式","炒飯","中式","海鮮","台式小吃","西式"];
 const BASE_CUI=["日式","台式","韓式","中式","港式","美式","義式","泰式"];
-const DISHES=["牛肉麵","滷肉飯","肉羹麵","肉圓","炒飯","擔仔麵","米糕","鍋燒意麵","餛飩","水餃","小籠包","鴨肉飯","雞肉飯","豬腳","臭豆腐","粄條","米粉","擀麵","鰻魚飯","丼飯","咖哩","壽司","牛排","燒肉","羊肉爐","麻辣鍋","烤鴨","港式點心","炸雞","水煎包","碗粿","蚵仔煎"];
-const DISH_SYN={"滷肉飯":["滷肉飯","魯肉飯","肉燥飯"],"肉羹麵":["肉羹","肉焿","肉庚"],"小籠包":["小籠包","湯包"],"擀麵":["擀麵","桿麵"],"港式點心":["港點","港式點心","飲茶","燒賣","蝦餃"],"鴨肉飯":["鴨肉飯","鴨肉麵","鴨肉冬粉"],"粄條":["粄條","板條"],"麻辣鍋":["麻辣鍋","麻辣火鍋"],"丼飯":["丼"],"燒肉":["燒肉","燒烤"],"水餃":["水餃","餃子"],"米糕":["米糕","筒仔米糕"],"雞肉飯":["雞肉飯","火雞肉飯"],"咖哩":["咖哩","咖喱"]};
+const DISHES=["牛肉麵","拌麵","滷肉飯","肉羹麵","肉圓","炒飯","擔仔麵","米糕","鍋燒意麵","餛飩","水餃","小籠包","鴨肉飯","雞肉飯","豬腳","臭豆腐","粄條","米粉","擀麵","鰻魚飯","丼飯","咖哩","壽司","牛排","燒肉","羊肉爐","麻辣鍋","烤鴨","港式點心","炸雞","水煎包","碗粿","蚵仔煎"];
+const DISH_SYN={"滷肉飯":["滷肉飯","魯肉飯","肉燥飯"],"肉羹麵":["肉羹","肉焿","肉庚"],"小籠包":["小籠包","湯包"],"擀麵":["擀麵","桿麵"],"港式點心":["港點","港式點心","飲茶","燒賣","蝦餃"],"鴨肉飯":["鴨肉飯","鴨肉麵","鴨肉冬粉"],"粄條":["粄條","板條"],"麻辣鍋":["麻辣鍋","麻辣火鍋"],"丼飯":["丼"],"燒肉":["燒肉","燒烤"],"水餃":["水餃","餃子"],"米糕":["米糕","筒仔米糕"],"雞肉飯":["雞肉飯","火雞肉飯"],"咖哩":["咖哩","咖喱"],"拌麵":["拌麵","伴麵","乾麵","乾拌麵","撈麵"],"牛肉麵":["牛肉麵","牛肉湯麵","牛肉拌麵"]};
 let customDishes=[];
 const dishText=r=>(r._dt??=[r.name,r.verdict,r.notes,r.mk,...(r.signature||[]),...(r.pros||[]),...(r.menu||[]).flatMap(s=>[s.section,...(s.items||[]).map(i=>i.name)])].join(" "));
 const hasDish=(r,d)=>{const m=(r._hd??={});if(d in m)return m[d];const t=dishText(r);return m[d]=(DISH_SYN[d]||[d]).some(k=>t.includes(k))};
@@ -652,6 +652,9 @@ function renderSoon(minGap){
   if(wait>0){rT=setTimeout(()=>{rT=0;renderSoon()},wait);return}
   rq=requestAnimationFrame(()=>{rq=0;render()});
 }
+const QSWAP=[["拌","伴"],["伴","拌"],["魯","滷"],["滷","魯"],["臺","台"],["台","臺"],["燒","焼"],["麵","面"]];
+function qVariants(q){const out=new Set([q]);for(const [a,b] of QSWAP)if(q.includes(a))out.add(q.split(a).join(b));
+  for(const [k,v] of Object.entries(DISH_SYN))if(q===k.toLowerCase()||v.some(x=>x.toLowerCase()===q))v.forEach(x=>out.add(x.toLowerCase()));return [...out]}
 function render(){lastRender=Date.now();
   const cities=uniq(["台中市",...items.map(r=>r.city)]);
   if(!cities.includes(F.city))F.city=cities[0];
@@ -674,9 +677,9 @@ function render(){lastRender=Date.now();
   $("#catList").innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join("");
   $("#cuiList").innerHTML=uniq([...BASE_CUI,...items.map(r=>r.cuisine)]).map(c=>`<option value="${esc(c)}">`).join("");
 
-  const q=F.q.trim().toLowerCase();
+  const q=F.q.trim().toLowerCase();const QV=q?qVariants(q):[];
   let rows=base.filter(r=>(F.zone!=="b500"||r.award_500)&&(F.zone!=="viral"||viral(r)?.hot)&&(F.zone!=="mich"||r.michelin)&&(!F.dish||hasDish(r,F.dish))&&(!F.cat||r.category===F.cat)&&(!F.cui||r.cuisine===F.cui)&&(!F.svc||r.service===F.svc)&&(!F.low||r.sponsor_risk==="低")&&(!F.visited||r.visited)&&(!F.noChain||!isChain(r))&&(!F.noClosed||!closedWarn(r))&&(!F.today||status(r).today===true)&&(!F.now||status(r).open)
-    &&(!q||(r._q??=[r.name,r.address,r.mk,r.verdict,...(r.signature||[]),...(r.menu||[]).flatMap(s=>(s.items||[]).map(i=>i.name))].join(" ").toLowerCase()).includes(q)));
+    &&(!q||(t=>QV.some(v=>t.includes(v)))(r._q??=[r.name,r.address,r.mk,r.verdict,...(r.signature||[]),...(r.menu||[]).flatMap(s=>(s.items||[]).map(i=>i.name))].join(" ").toLowerCase())));
   const altR=x=>{const a=(x.alt_ratings||[]).find(a=>a.rating!=null);return a?a.rating/10-1:-2};
   const s={rating:(a,b)=>(b.google_rating??altR(b))-(a.google_rating??altR(a))||(b.review_count??0)-(a.review_count??0),
     reviews:(a,b)=>(b.review_count??-1)-(a.review_count??-1),priceLo:(a,b)=>priceLo(a.price)-priceLo(b.price),name:(a,b)=>a.name.localeCompare(b.name,"zh-Hant")}[F.sort];
