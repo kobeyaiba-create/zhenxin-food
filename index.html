@@ -291,6 +291,8 @@ h1,.c-name,.t-stat b,.det-in .c-name{font-family:var(--display);font-weight:400;
 .bd.closed{background:#b42318;color:#fff}
 .cwarn{background:#b42318;color:#fff;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:700}
 .card.isclosed{opacity:.82}
+.bd.fresh{background:#1f7a5c;color:#fff}
+.zone.freshz{background:linear-gradient(135deg,#e8fff4,#fff8e0);border-color:#9fd9bf}.zone.freshz h2{color:#1f7a5c}
 .bd.up{background:#d6f5e3;color:#0b7a45}.bd.down{background:#ffe0e0;color:#c4202f;outline:2px solid #ffb3b3}
 .trend{font-size:13px;padding:8px 12px;border-radius:12px;background:var(--bg)}
 .trend.good{background:var(--ok-soft);color:var(--ok)}.trend.bad{background:var(--bad-soft);color:var(--bad)}
@@ -451,6 +453,10 @@ body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
 
   <div id="importBar" hidden style="margin:8px 0;padding:8px 12px;border-radius:8px;background:var(--accent-soft,#fff3d6);color:var(--ink,#222);font-size:14px"></div>
   <div class="meta"><span id="count">正在讀取店家資料…</span><span>評分、價格為整理時的網路資料，出發前請再確認</span></div>
+  <div class="zone freshz" id="freshBanner" hidden>
+    <h2>🆕 新開特色店</h2>
+    <p>評論還不多、但值得注意的小店：🆕 是評論或店家介紹提到新開不久的店；✨ 是評論 100～499 則、評分 4.8 以上的特色小店。評論少的店變動大，建議出發前再看一下近期評論。</p>
+  </div>
   <div class="zone michz" id="michBanner" hidden>
     <h2>⭐ 米其林指南 2026</h2>
     <p>《臺灣米其林指南 2026》台中、新竹的星級、必比登推介與入選餐廳（2026 年 7 月公布）。依「星級 → 必比登 → 入選」排序，🌿 為米其林綠星（永續美食）。</p>
@@ -667,7 +673,7 @@ function render(){lastRender=Date.now();
   const cnt=(arr,k,v)=>arr.filter(r=>r[k]===v).length;
   const cats=uniq([...BASE_CATS,...items.map(r=>r.category)]);
   renderDish(base);
-  chips($("#fZone"),[["","全部"],["viral","🚀 短線爆紅",base.filter(r=>viral(r)?.hot).length],["mich","⭐ 米其林 2026",base.filter(r=>r.michelin).length],["b500","500碗 2026",base.filter(r=>r.award_500).length]],"zone");
+  chips($("#fZone"),[["","全部"],["viral","🚀 短線爆紅",base.filter(r=>viral(r)?.hot).length],["fresh","🆕 新開特色店",base.filter(r=>r.fresh).length],["mich","⭐ 米其林 2026",base.filter(r=>r.michelin).length],["b500","500碗 2026",base.filter(r=>r.award_500).length]],"zone");
   chips($("#fCat"),[["","🍴 全部",base.length],...cats.map(c=>[c,(EMO[c]||"🍴")+" "+c,cnt(base,"category",c)])],"cat");
   const cuis=uniq([...BASE_CUI.filter(c=>base.some(r=>r.cuisine===c)),...base.map(r=>r.cuisine)]);
   chips($("#fCui"),[["","全部"],...cuis.map(c=>[c,c,cnt(base,"cuisine",c)])],"cui");
@@ -678,7 +684,7 @@ function render(){lastRender=Date.now();
   $("#cuiList").innerHTML=uniq([...BASE_CUI,...items.map(r=>r.cuisine)]).map(c=>`<option value="${esc(c)}">`).join("");
 
   const q=F.q.trim().toLowerCase();const QV=q?qVariants(q):[];
-  let rows=base.filter(r=>(F.zone!=="b500"||r.award_500)&&(F.zone!=="viral"||viral(r)?.hot)&&(F.zone!=="mich"||r.michelin)&&(!F.dish||hasDish(r,F.dish))&&(!F.cat||r.category===F.cat)&&(!F.cui||r.cuisine===F.cui)&&(!F.svc||r.service===F.svc)&&(!F.low||r.sponsor_risk==="低")&&(!F.visited||r.visited)&&(!F.noChain||!isChain(r))&&(!F.noClosed||!closedWarn(r))&&(!F.today||status(r).today===true)&&(!F.now||status(r).open)
+  let rows=base.filter(r=>(F.zone!=="b500"||r.award_500)&&(F.zone!=="viral"||viral(r)?.hot)&&(F.zone!=="mich"||r.michelin)&&(F.zone!=="fresh"||r.fresh)&&(!F.dish||hasDish(r,F.dish))&&(!F.cat||r.category===F.cat)&&(!F.cui||r.cuisine===F.cui)&&(!F.svc||r.service===F.svc)&&(!F.low||r.sponsor_risk==="低")&&(!F.visited||r.visited)&&(!F.noChain||!isChain(r))&&(!F.noClosed||!closedWarn(r))&&(!F.today||status(r).today===true)&&(!F.now||status(r).open)
     &&(!q||(t=>QV.some(v=>t.includes(v)))(r._q??=[r.name,r.address,r.mk,r.verdict,...(r.signature||[]),...(r.menu||[]).flatMap(s=>(s.items||[]).map(i=>i.name))].join(" ").toLowerCase())));
   const altR=x=>{const a=(x.alt_ratings||[]).find(a=>a.rating!=null);return a?a.rating/10-1:-2};
   const s={rating:(a,b)=>(b.google_rating??altR(b))-(a.google_rating??altR(a))||(b.review_count??0)-(a.review_count??0),
@@ -690,7 +696,7 @@ function render(){lastRender=Date.now();
   $("#stOpen").textContent=base.filter(r=>status(r).open).length.toLocaleString();$("#stOpenTxt").textContent=F.now?"✓ 已篩選・點我取消":"點我只看營業中";$("#stOpenBtn").classList.toggle("on",!!F.now);
   $("#stViral").textContent=base.filter(r=>viral(r)?.hot).length.toLocaleString();$("#stViralTxt").textContent=F.zone==="viral"?"✓ 已篩選・點我取消":"點我看爆紅店";$("#stViralBtn").classList.toggle("on",F.zone==="viral");
   const fc=[F.zone,F.dish,F.cui,F.svc,F.low,F.noChain,F.noClosed,F.visited,F.today,F.now].filter(Boolean).length;$("#fCnt").textContent=fc?" "+fc:"";$("#fMore").classList.toggle("on",fc>0);
-  const zb=$("#zoneBanner");zb.hidden=F.zone!=="b500";$("#viralBanner").hidden=F.zone!=="viral";$("#michBanner").hidden=F.zone!=="mich";
+  const zb=$("#zoneBanner");zb.hidden=F.zone!=="b500";$("#viralBanner").hidden=F.zone!=="viral";$("#michBanner").hidden=F.zone!=="mich";$("#freshBanner").hidden=F.zone!=="fresh";
   if(!zb.hidden){const NOTE={"台中市":"台中共 33 家入選：3 碗 1 家、2 碗 2 家、1 碗 30 家（藍山牛肉麵已歇業，未列出）。","新竹市":"新竹（市＋縣）共 18 家入選，全部為 1 碗；新竹市的「無名麵店」因無法確認是哪一家，暫未列出。","苗栗縣":"苗栗共 15 家入選：2 碗 1 家（北苗二家合）、1 碗 14 家。","新竹縣":"新竹（市＋縣）共 18 家入選，全部為 1 碗；新竹市的「無名麵店」因無法確認是哪一家，暫未列出。"};
     const b5=inCity.filter(r=>r.award_500);$("#zoneStat").textContent=(NOTE[F.city]||"")+`目前${F.city}列出 ${b5.length} 家。`;}
   const L=$("#list");
@@ -826,6 +832,7 @@ function badges(r){
   if(r._bd&&r._bdK===_nowT)return r._bd;
   const b=[],rc=r.review_count||0,g=r.google_rating||0;
   const cw=closedWarn(r);if(cw)b.push(["closed","⚠️ "+cw+"？出發前確認"]);
+  if(r.fresh==="new")b.push(["fresh","🆕 新開"]);else if(r.fresh==="special")b.push(["fresh","✨ 特色小店"]);
   const tr=trend(r);
   if(tr&&!tr.wait&&tr.kind==="good")b.push(["up",`👍 ${tr.realDays>=30?"近月":"近期"}好評多 +${tr.good}`]);
   if(tr&&!tr.wait&&tr.kind==="bad")b.push(["down",`⚠️ ${tr.realDays>=30?"近月":"近期"}負評多 +${tr.bad}`]);
