@@ -578,6 +578,8 @@ const imgQ=(r,dish)=>"https://www.google.com/search?tbm=isch&q="+encodeURICompon
 const blob=id=>"/_blob/"+id;
 const F={city:"台中市",dist:"",cat:"",cui:"",svc:"",q:"",low:false,visited:false,sort:"rating"};
 try{const s=JSON.parse(localStorage.getItem("ff")||"null");if(s)Object.assign(F,s,{q:""})}catch(e){}
+try{const lr=JSON.parse(localStorage.getItem("lastRegion")||"null");if(lr&&lr.city){F.city=lr.city;F.dist=lr.dist||""}}catch(e){}
+const saveRegion=()=>{try{localStorage.setItem("lastRegion",JSON.stringify({city:F.city,dist:F.dist}))}catch(e){}};
 const saveF=()=>{try{localStorage.setItem("ff",JSON.stringify(F))}catch(e){}};
 
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -663,6 +665,7 @@ function qVariants(q){const out=new Set([q]);for(const [a,b] of QSWAP)if(q.inclu
   for(const [k,v] of Object.entries(DISH_SYN))if(q===k.toLowerCase()||v.some(x=>x.toLowerCase()===q))v.forEach(x=>out.add(x.toLowerCase()));return [...out]}
 function render(){lastRender=Date.now();
   const cities=uniq(["台中市",...items.map(r=>r.city)]);
+  if(!items.length){$("#count").textContent="載入中…";return}
   if(!cities.includes(F.city))F.city=cities[0];
   sel($("#fCity"),cities.map(c=>[c,c]),F.city);
   const inCity=items.filter(r=>r.city===F.city);
@@ -959,7 +962,7 @@ function openLb(rid,pid){
   base();lb.showModal();
 }
 lb.addEventListener("click",e=>{if(e.target===lb)lb.close()});
-["fCity","fDist","fSort"].forEach(id=>$("#"+id).onchange=e=>{const k={fCity:"city",fDist:"dist",fSort:"sort"}[id];F[k]=e.target.value;if(id==="fCity")F.dist="";saveF();render()});
+["fCity","fDist","fSort"].forEach(id=>$("#"+id).onchange=e=>{const k={fCity:"city",fDist:"dist",fSort:"sort"}[id];F[k]=e.target.value;if(id==="fCity")F.dist="";if(id!=="fSort")saveRegion();saveF();render()});
 let qT=0;
 $("#fQ").oninput=e=>{F.q=e.target.value;clearTimeout(qT);qT=setTimeout(render,220)};
 $("#fabGo").onclick=()=>{const smooth=!matchMedia("(prefers-reduced-motion: reduce)").matches;scrollTo({top:0,behavior:smooth?"smooth":"auto"});const q=$("#fQ");setTimeout(()=>{q.focus({preventScroll:true});q.select()},smooth?350:0)};
