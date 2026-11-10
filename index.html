@@ -443,6 +443,7 @@ body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
     <div class="fd-s"><span class="k">✅ 條件</span><div class="opts">
       <label class="toggle"><input type="checkbox" id="fLow"> 業配風險低</label>
       <label class="toggle"><input type="checkbox" id="fNoChain"> 排除連鎖</label>
+      <label class="toggle"><input type="checkbox" id="fVeg"> 🥬 素食</label>
       <label class="toggle"><input type="checkbox" id="fVisited"> 吃過的</label>
       <label class="toggle"><input type="checkbox" id="fNoClosed"> 隱藏可能歇業</label>
       <label class="toggle"><input type="checkbox" id="fToday"> 今天有開</label>
@@ -663,6 +664,8 @@ function renderSoon(minGap){
 const QSWAP=[["拌","伴"],["伴","拌"],["魯","滷"],["滷","魯"],["臺","台"],["台","臺"],["燒","焼"],["麵","面"]];
 function qVariants(q){const out=new Set([q]);for(const [a,b] of QSWAP)if(q.includes(a))out.add(q.split(a).join(b));
   for(const [k,v] of Object.entries(DISH_SYN))if(q===k.toLowerCase()||v.some(x=>x.toLowerCase()===q))v.forEach(x=>out.add(x.toLowerCase()));return [...out]}
+const VEG_G=/素食|純素|蔬食|vegetarian|vegan/i,VEG_N=/素食|蔬食|全素|蛋奶素|五辛素|素料理|素麵|素滷味|素火鍋|素便當|植物肉|純植/;
+function isVeg(r){return VEG_G.test(r.google_category||"")||VEG_G.test(r.cuisine||"")||VEG_N.test(r.name||"")}
 function render(){lastRender=Date.now();
   const cities=uniq(["台中市",...items.map(r=>r.city)]);
   if(!items.length){$("#count").textContent="載入中…";return}
@@ -681,13 +684,13 @@ function render(){lastRender=Date.now();
   const cuis=uniq([...BASE_CUI.filter(c=>base.some(r=>r.cuisine===c)),...base.map(r=>r.cuisine)]);
   chips($("#fCui"),[["","全部"],...cuis.map(c=>[c,c,cnt(base,"cuisine",c)])],"cui");
   chips($("#fSvc"),[["","全部"],["單點","單點",cnt(base,"service","單點")],["吃到飽","吃到飽",cnt(base,"service","吃到飽")]],"svc");
-  $("#fLow").checked=F.low;$("#fVisited").checked=F.visited;$("#fNoChain").checked=!!F.noChain;$("#fToday").checked=!!F.today;$("#fNoClosed").checked=!!F.noClosed;$("#fNow").checked=!!F.now;$("#fSort").value=F.sort;
+  $("#fLow").checked=F.low;$("#fVisited").checked=F.visited;$("#fNoChain").checked=!!F.noChain;$("#fVeg").checked=!!F.veg;$("#fToday").checked=!!F.today;$("#fNoClosed").checked=!!F.noClosed;$("#fNow").checked=!!F.now;$("#fSort").value=F.sort;
   $("#cityList").innerHTML=cities.map(c=>`<option value="${esc(c)}">`).join("");
   $("#catList").innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join("");
   $("#cuiList").innerHTML=uniq([...BASE_CUI,...items.map(r=>r.cuisine)]).map(c=>`<option value="${esc(c)}">`).join("");
 
   const q=F.q.trim().toLowerCase();const QV=q?qVariants(q):[];
-  let rows=base.filter(r=>(F.zone!=="b500"||r.award_500)&&(F.zone!=="viral"||viral(r)?.hot)&&(F.zone!=="mich"||r.michelin)&&(F.zone!=="fresh"||r.fresh)&&(!F.dish||hasDish(r,F.dish))&&(!F.cat||r.category===F.cat)&&(!F.cui||r.cuisine===F.cui)&&(!F.svc||r.service===F.svc)&&(!F.low||r.sponsor_risk==="低")&&(!F.visited||r.visited)&&(!F.noChain||!isChain(r))&&(!F.noClosed||!closedWarn(r))&&(!F.today||status(r).today===true)&&(!F.now||status(r).open)
+  let rows=base.filter(r=>(F.zone!=="b500"||r.award_500)&&(F.zone!=="viral"||viral(r)?.hot)&&(F.zone!=="mich"||r.michelin)&&(F.zone!=="fresh"||r.fresh)&&(!F.dish||hasDish(r,F.dish))&&(!F.cat||r.category===F.cat)&&(!F.cui||r.cuisine===F.cui)&&(!F.svc||r.service===F.svc)&&(!F.low||r.sponsor_risk==="低")&&(!F.visited||r.visited)&&(!F.noChain||!isChain(r))&&(!F.veg||isVeg(r))&&(!F.noClosed||!closedWarn(r))&&(!F.today||status(r).today===true)&&(!F.now||status(r).open)
     &&(!q||(t=>QV.some(v=>t.includes(v)))(r._q??=[r.name,r.address,r.mk,r.verdict,...(r.signature||[]),...(r.menu||[]).flatMap(s=>(s.items||[]).map(i=>i.name))].join(" ").toLowerCase())));
   const altR=x=>{const a=(x.alt_ratings||[]).find(a=>a.rating!=null);return a?a.rating/10-1:-2};
   const s={rating:(a,b)=>(b.google_rating??altR(b))-(a.google_rating??altR(a))||(b.review_count??0)-(a.review_count??0),
@@ -698,7 +701,7 @@ function render(){lastRender=Date.now();
   $("#stMatch").textContent=rows.length.toLocaleString();$("#stAll").textContent=`${F.city}${F.dist?"・"+F.dist:""}・共 ${items.length.toLocaleString()} 家`;
   $("#stOpen").textContent=base.filter(r=>status(r).open).length.toLocaleString();$("#stOpenTxt").textContent=F.now?"✓ 已篩選・點我取消":"點我只看營業中";$("#stOpenBtn").classList.toggle("on",!!F.now);
   $("#stViral").textContent=base.filter(r=>viral(r)?.hot).length.toLocaleString();$("#stViralTxt").textContent=F.zone==="viral"?"✓ 已篩選・點我取消":"點我看爆紅店";$("#stViralBtn").classList.toggle("on",F.zone==="viral");
-  const fc=[F.zone,F.dish,F.cui,F.svc,F.low,F.noChain,F.noClosed,F.visited,F.today,F.now].filter(Boolean).length;$("#fCnt").textContent=fc?" "+fc:"";$("#fMore").classList.toggle("on",fc>0);
+  const fc=[F.zone,F.dish,F.cui,F.svc,F.low,F.noChain,F.veg,F.noClosed,F.visited,F.today,F.now].filter(Boolean).length;$("#fCnt").textContent=fc?" "+fc:"";$("#fMore").classList.toggle("on",fc>0);
   const zb=$("#zoneBanner");zb.hidden=F.zone!=="b500";$("#viralBanner").hidden=F.zone!=="viral";$("#michBanner").hidden=F.zone!=="mich";$("#freshBanner").hidden=F.zone!=="fresh";
   if(!zb.hidden){const NOTE={"台中市":"台中共 33 家入選：3 碗 1 家、2 碗 2 家、1 碗 30 家（藍山牛肉麵已歇業，未列出）。","新竹市":"新竹（市＋縣）共 18 家入選，全部為 1 碗；新竹市的「無名麵店」因無法確認是哪一家，暫未列出。","苗栗縣":"苗栗共 15 家入選：2 碗 1 家（北苗二家合）、1 碗 14 家。","新竹縣":"新竹（市＋縣）共 18 家入選，全部為 1 碗；新竹市的「無名麵店」因無法確認是哪一家，暫未列出。"};
     const b5=inCity.filter(r=>r.award_500);$("#zoneStat").textContent=(NOTE[F.city]||"")+`目前${F.city}列出 ${b5.length} 家。`;}
@@ -923,7 +926,7 @@ $("#moreBtn").onclick=()=>{shown+=60;render()};
 $("#stOpenBtn").onclick=()=>{F.now=!F.now;saveF();render()};
 $("#stViralBtn").onclick=()=>{F.zone=F.zone==="viral"?"":"viral";saveF();render()};
 const fdlg=$("#fdlg");$("#fMore").onclick=()=>fdlg.showModal();$("#fdClose").onclick=()=>fdlg.close();fdlg.addEventListener("click",e=>{if(e.target===fdlg)fdlg.close()});
-$("#fReset").onclick=()=>{Object.assign(F,{zone:"",dish:"",cui:"",svc:"",low:false,noChain:false,noClosed:false,visited:false,today:false,now:false,cat:""});saveF();render()};
+$("#fReset").onclick=()=>{Object.assign(F,{zone:"",dish:"",cui:"",svc:"",low:false,noChain:false,veg:false,noClosed:false,visited:false,today:false,now:false,cat:""});saveF();render()};
 
 /* ---- photos ---- */
 const phDlg=$("#phDlg"), lb=$("#lb");
@@ -969,6 +972,7 @@ $("#fabGo").onclick=()=>{const smooth=!matchMedia("(prefers-reduced-motion: redu
 $("#fLow").onchange=e=>{F.low=e.target.checked;saveF();render()};
 $("#fVisited").onchange=e=>{F.visited=e.target.checked;saveF();render()};
 $("#fNoChain").onchange=e=>{F.noChain=e.target.checked;saveF();render()};
+$("#fVeg").onchange=e=>{F.veg=e.target.checked;saveF();render()};
 $("#fNoClosed").onchange=e=>{F.noClosed=e.target.checked;saveF();render()};
 $("#fToday").onchange=e=>{F.today=e.target.checked;saveF();render()};
 $("#fNow").onchange=e=>{F.now=e.target.checked;saveF();render()};
