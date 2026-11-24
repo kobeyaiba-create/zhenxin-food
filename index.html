@@ -679,6 +679,10 @@ function qVariants(q){const out=new Set([q]);for(const [a,b] of QSWAP)if(q.inclu
   for(const [k,v] of Object.entries(DISH_SYN))if(q===k.toLowerCase()||v.some(x=>x.toLowerCase()===q))v.forEach(x=>out.add(x.toLowerCase()));return [...out]}
 const VEG_G=/素食|純素|蔬食|vegetarian|vegan/i,VEG_N=/素食|蔬食|全素|蛋奶素|五辛素|素料理|素麵|素滷味|素火鍋|素便當|植物肉|純植/;
 function isVeg(r){return VEG_G.test(r.google_category||"")||VEG_G.test(r.cuisine||"")||VEG_N.test(r.name||"")}
+const UNIQ_RE=/獨特|獨家|獨門|特色|招牌|創意|秘製|祕製|自製|手工|手作|限量|老店|傳承|古早|職人|主廚|無菜單|私房|在地|現做|現煮|現包|現炸|自家|老字號|排隊/g;
+let chainCntFor=-1,chainCnt=null;
+function chainN(r){if(chainCntFor!==items.length){chainCnt=new Map();items.forEach(x=>{if(!isChain(x))return;const k=x._bk||brandKey(x.name);chainCnt.set(k,(chainCnt.get(k)||0)+1)});chainCntFor=items.length}
+  const nm=String(r.name||"").toLowerCase();if(KNOWN_CHAINS.some(b=>nm.includes(b)))return 99;return chainCnt.get(r._bk||brandKey(r.name))||2}
 /* 真心指數：評分×評論數（貝氏修正）＋星等分布＋近期趨勢＋業配風險 */
 function zx(r){
   if(r._zx!==undefined&&r._zxK===itemsVer)return r._zx;r._zxK=itemsVer;
@@ -699,13 +703,20 @@ function zx(r){
   const sr=r.sponsor_risk,ds=sr==="低"?8:sr==="高"?-15:0;
   parts.push(["業配風險",sr||"未知",ds]);sc+=ds;
   if(r.michelin||r.award_500){parts.push(["獎項",r.michelin?"米其林":"500碗",6]);sc+=6}
-  const n=Math.round(Math.max(1,Math.min(99,sc+6)));
-  const g=n>=88?"必吃":n>=76?"很推":n>=58?"不錯":"普通";
+  const txt=[r.verdict,r.mk,...(r.signature||[]),...(r.pros||[])].join(" ");
+  const hit=uniq((txt.match(UNIQ_RE)||[]));let u=Math.min(9,hit.length*3);if(r.fresh==="special")u+=4;if((r.signature||[]).length>=2)u+=2;u=Math.min(12,u);
+  if(u)parts.push(["特色感",hit.length?hit.slice(0,4).join("、"):(r.fresh==="special"?"特色小店":"有招牌菜"),u]),sc+=u;
+  if(isChain(r)){const cn=chainN(r),d=cn>=10?-15:cn>=5?-10:-6;parts.push(["連鎖店",cn>=10?"大型連鎖":`連鎖（約 ${cn} 家）`,d]);sc+=d}
+  if((String(r.name).match(/[｜|／\/]/g)||[]).length>=2){parts.push(["行銷味","店名塞滿關鍵字",-4]);sc-=4}
+  if(R>=4.8&&v<300){parts.push(["假高分風險","高分但評論數少",-6]);sc-=6}
+  if(/打卡|送.{0,4}(小菜|飲料|甜點|招待)|五星.{0,4}(送|折)|好評.{0,3}(送|折)/.test([r.verdict,r.sponsor_note,...(r.cons||[])].join(" "))){parts.push(["假高分風險","有打卡／好評送",-8]);sc-=8}
+  const n=Math.round(Math.max(1,Math.min(99,sc*.82+6)));
+  const g=n>=75?"必吃":n>=62?"很推":n>=48?"不錯":"普通";
   return r._zx={n,g,polar,parts};
 }
-const ZXC=n=>n>=88?"z1":n>=76?"z2":n>=58?"z3":"z4";
+const ZXC=n=>n>=75?"z1":n>=62?"z2":n>=48?"z3":"z4";
 function zxHtml(r){const z=zx(r);if(!z)return "";
-  return `<div class="zx"><div class="zxh"><span class="zxn ${ZXC(z.n)}">${z.n}</span><div><b>真心指數・${z.g}</b><small>綜合評分可信度、星等分布、近期趨勢與業配風險</small></div></div>
+  return `<div class="zx"><div class="zxh"><span class="zxn ${ZXC(z.n)}">${z.n}</span><div><b>真心指數・${z.g}</b><small>評分可信度、星等分布、近期趨勢、特色感、連鎖與業配風險</small></div></div>
   <ul>${z.parts.map(([k,t,d])=>`<li><span>${esc(k)}</span><span>${esc(t)}</span><b class="${d>0?"p":d<0?"m":""}">${k==="評分可信度"?d:(d>0?"+":"")+d}</b></li>`).join("")}</ul>
   ${z.polar?`<p class="zxw">⚠️ 評價兩極：喜歡的人很愛、踩雷的人也不少，看看負評在罵什麼再決定。</p>`:""}</div>`}
 /* 我的口味筆記（存在這支手機） */
