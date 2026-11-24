@@ -294,6 +294,18 @@ h1,.c-name,.t-stat b,.det-in .c-name{font-family:var(--display);font-weight:400;
 .bd.fresh{background:#1f7a5c;color:#fff}
 .zone.freshz{background:linear-gradient(135deg,#e8fff4,#fff8e0);border-color:#9fd9bf}.zone.freshz h2{color:#1f7a5c}
 .bd.up{background:#d6f5e3;color:#0b7a45}.bd.down{background:#ffe0e0;color:#c4202f;outline:2px solid #ffb3b3}
+.zx{border-radius:16px;padding:12px 14px;background:var(--bg);display:grid;gap:8px}
+.zxh{display:flex;gap:12px;align-items:center}.zxh b{display:block;font-size:15px}.zxh small{font-size:12px;opacity:.7}
+.zxn{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font:900 22px/1 "Noto Sans TC",sans-serif;color:#fff}
+.zxn.z1,.bd.zx.z1{background:#e8432f;color:#fff}.zxn.z2,.bd.zx.z2{background:#ff8a1f;color:#fff}.zxn.z3,.bd.zx.z3{background:#f5c542;color:#4a3500}.zxn.z4,.bd.zx.z4{background:#c9c4bb;color:#3a3530}
+.zx ul{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:13px}
+.zx li{display:grid;grid-template-columns:4.8em 1fr auto;gap:8px;align-items:baseline}.zx li>span:first-child{opacity:.65}
+.zx li b.p{color:var(--ok)}.zx li b.m{color:var(--bad)}.zxw{margin:0;font-size:13px;color:var(--bad)}
+.mybox{border:2px dashed var(--accent);border-radius:16px;padding:10px 12px;display:grid;gap:8px}
+.myh{font-weight:700}.myh small{font-weight:400;font-size:12px;opacity:.65;margin-left:8px}
+.myrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.myrow .btn.on{background:var(--accent);color:#fff}
+.stars button{border:0;background:none;font-size:26px;line-height:1;padding:0 2px;color:#d7d1c7;cursor:pointer}.stars button.on{color:#f5a623}
+.mybox textarea{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid #ddd5c8;padding:8px;font:inherit;resize:vertical}
 .trend{font-size:13px;padding:8px 12px;border-radius:12px;background:var(--bg)}
 .trend.good{background:var(--ok-soft);color:var(--ok)}.trend.bad{background:var(--bad-soft);color:var(--bad)}
 .bd.viral{background:linear-gradient(90deg,#ff5a3c,#ff7aa8);color:#fff}
@@ -425,6 +437,7 @@ body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
       <select id="fDist" aria-label="行政區"></select>
       <input id="fQ" class="search" type="search" placeholder="🔍 搜尋店名、菜色、地址" aria-label="搜尋">
       <select id="fSort" aria-label="排序">
+        <option value="zx">真心指數高→低</option>
         <option value="rating">評分高→低</option>
         <option value="reviews">評論多→少</option>
         <option value="priceLo">價格低→高</option>
@@ -666,6 +679,44 @@ function qVariants(q){const out=new Set([q]);for(const [a,b] of QSWAP)if(q.inclu
   for(const [k,v] of Object.entries(DISH_SYN))if(q===k.toLowerCase()||v.some(x=>x.toLowerCase()===q))v.forEach(x=>out.add(x.toLowerCase()));return [...out]}
 const VEG_G=/素食|純素|蔬食|vegetarian|vegan/i,VEG_N=/素食|蔬食|全素|蛋奶素|五辛素|素料理|素麵|素滷味|素火鍋|素便當|植物肉|純植/;
 function isVeg(r){return VEG_G.test(r.google_category||"")||VEG_G.test(r.cuisine||"")||VEG_N.test(r.name||"")}
+/* 真心指數：評分×評論數（貝氏修正）＋星等分布＋近期趨勢＋業配風險 */
+function zx(r){
+  if(r._zx!==undefined&&r._zxK===itemsVer)return r._zx;r._zxK=itemsVer;
+  const R=r.google_rating,v=r.review_count||0;
+  if(R==null||v<5||closedWarn(r))return r._zx=null;
+  const m=150,C=4.1,bay=(v*R+m*C)/(v+m);
+  const parts=[];let sc=Math.max(0,Math.min(80,(bay-3.6)/(4.75-3.6)*80));
+  parts.push(["評分可信度",`${Number(R).toFixed(1)} 星、${kfmt(v)} 則 → 可信評分 ${bay.toFixed(2)}`,Math.round(sc)]);
+  let polar=false;
+  const hs=(r.hist||[]).filter(x=>Array.isArray(x.h)&&x.h.length===5);
+  if(hs.length){const h=hs[hs.length-1].h,t=h.reduce((a,b)=>a+b,0);
+    if(t>=30){const s1=h[0]/t,s5=h[4]/t,low=(h[0]+h[1])/t;
+      const pen=-Math.min(15,Math.max(0,(low-.07)*120));
+      polar=s1>=.12&&s5>=.55;
+      parts.push(["星等分布",`五星 ${(s5*100).toFixed(0)}%・一二星 ${(low*100).toFixed(0)}%${polar?"（兩極）":""}`,Math.round(pen)]);sc+=pen}}
+  const tr=trend(r);
+  if(tr&&!tr.wait&&tr.kind!=="flat"){const d=tr.kind==="good"?6:-12;parts.push(["近期趨勢",tr.kind==="good"?`近期好評多 +${tr.good}`:`近期負評多 +${tr.bad}`,d]);sc+=d}
+  const sr=r.sponsor_risk,ds=sr==="低"?8:sr==="高"?-15:0;
+  parts.push(["業配風險",sr||"未知",ds]);sc+=ds;
+  if(r.michelin||r.award_500){parts.push(["獎項",r.michelin?"米其林":"500碗",6]);sc+=6}
+  const n=Math.round(Math.max(1,Math.min(99,sc+6)));
+  const g=n>=88?"必吃":n>=76?"很推":n>=58?"不錯":"普通";
+  return r._zx={n,g,polar,parts};
+}
+const ZXC=n=>n>=88?"z1":n>=76?"z2":n>=58?"z3":"z4";
+function zxHtml(r){const z=zx(r);if(!z)return "";
+  return `<div class="zx"><div class="zxh"><span class="zxn ${ZXC(z.n)}">${z.n}</span><div><b>真心指數・${z.g}</b><small>綜合評分可信度、星等分布、近期趨勢與業配風險</small></div></div>
+  <ul>${z.parts.map(([k,t,d])=>`<li><span>${esc(k)}</span><span>${esc(t)}</span><b class="${d>0?"p":d<0?"m":""}">${k==="評分可信度"?d:(d>0?"+":"")+d}</b></li>`).join("")}</ul>
+  ${z.polar?`<p class="zxw">⚠️ 評價兩極：喜歡的人很愛、踩雷的人也不少，看看負評在罵什麼再決定。</p>`:""}</div>`}
+/* 我的口味筆記（存在這支手機） */
+let MINE={};try{MINE=JSON.parse(localStorage.getItem("mine")||"{}")||{}}catch(e){MINE={}}
+const saveMine=()=>{try{localStorage.setItem("mine",JSON.stringify(MINE))}catch(e){}};
+function applyMine(r){const m=MINE[r._id];if(!m)return;if(m.v!=null)r.visited=!!m.v;if(m.s!=null)r.my_rating=m.s||"";if(m.t!=null)r.my_note=m.t}
+function mineHtml(r){if(canWrite)return "";const m=MINE[r._id]||{};
+  return `<div class="mybox"><div class="myh">🍽️ 我的口味筆記<small>只存在這支手機</small></div>
+  <div class="myrow"><button type="button" class="btn${r.visited?" on":""}" data-mv="${esc(r._id)}">${r.visited?"✓ 吃過了":"標記吃過"}</button>
+  <span class="stars" role="group" aria-label="我的評分">${[1,2,3,4,5].map(i=>`<button type="button" data-ms="${esc(r._id)}|${i}" aria-label="${i} 分" class="${(m.s||0)>=i?"on":""}">★</button>`).join("")}</span></div>
+  <textarea data-mt="${esc(r._id)}" rows="2" placeholder="例如：湯頭偏鹹、下次點小辣…">${esc(m.t||"")}</textarea></div>`}
 function render(){lastRender=Date.now();
   const cities=uniq(["台中市",...items.map(r=>r.city)]);
   if(!items.length){$("#count").textContent="載入中…";return}
@@ -694,7 +745,7 @@ function render(){lastRender=Date.now();
     &&(!q||(t=>QV.some(v=>t.includes(v)))(r._q??=[r.name,r.address,r.mk,r.verdict,...(r.signature||[]),...(r.menu||[]).flatMap(s=>(s.items||[]).map(i=>i.name))].join(" ").toLowerCase())));
   const altR=x=>{const a=(x.alt_ratings||[]).find(a=>a.rating!=null);return a?a.rating/10-1:-2};
   const s={rating:(a,b)=>(b.google_rating??altR(b))-(a.google_rating??altR(a))||(b.review_count??0)-(a.review_count??0),
-    reviews:(a,b)=>(b.review_count??-1)-(a.review_count??-1),priceLo:(a,b)=>priceLo(a.price)-priceLo(b.price),name:(a,b)=>a.name.localeCompare(b.name,"zh-Hant")}[F.sort];
+    reviews:(a,b)=>(b.review_count??-1)-(a.review_count??-1),zx:(a,b)=>(zx(b)?.n??-1)-(zx(a)?.n??-1)||(b.review_count??0)-(a.review_count??0),priceLo:(a,b)=>priceLo(a.price)-priceLo(b.price),name:(a,b)=>a.name.localeCompare(b.name,"zh-Hant")}[F.sort];
   rows.sort(F.zone==="b500"?(a,b)=>(b.award_500?.bowls||0)-(a.award_500?.bowls||0)||s(a,b):F.zone==="viral"?(a,b)=>viral(b).score-viral(a).score:F.zone==="mich"?(a,b)=>(MT[b.michelin?.t]||0)-(MT[a.michelin?.t]||0)||s(a,b):s);
   $("#count").textContent=`${F.city}${F.dist?"・"+F.dist:""}：符合 ${rows.length} 家（共 ${items.length} 家）`;
   const sig=JSON.stringify(F);
@@ -838,6 +889,7 @@ function badges(r){
   if(r._bd&&r._bdK===_nowT)return r._bd;
   const b=[],rc=r.review_count||0,g=r.google_rating||0;
   const cw=closedWarn(r);if(cw)b.push(["closed","⚠️ "+cw+"？出發前確認"]);
+  const z=zx(r);if(z)b.push(["zx "+ZXC(z.n),`🎯 真心 ${z.n}・${z.g}`]);if(z&&z.polar)b.push(["down","⚖️ 評價兩極"]);
   if(r.fresh==="new")b.push(["fresh","🆕 新開"]);else if(r.fresh==="special")b.push(["fresh","✨ 特色小店"]);
   const tr=trend(r);
   if(tr&&!tr.wait&&tr.kind==="good")b.push(["up",`👍 ${tr.realDays>=30?"近月":"近期"}好評多 +${tr.good}`]);
@@ -886,12 +938,13 @@ function detail(r){
   ${bowlHtml(r)}${tagsHtml(r)}
   ${r.closed_days?`<div class="closedline"><span>公休　</span>${esc(r.closed_days)}</div>`:""}
   ${closedWarn(r)?`<div class="cwarn">⚠️ 這家店${closedWarn(r)==="暫停營業"?"可能暫停營業中":"可能已經歇業"}（依店名、評論或營業時間判斷），出發前請先打電話確認。</div>`:""}
+  ${zxHtml(r)}
   ${(t=>t?`<div class="trend ${t.kind||""}">📈 ${esc(trendTxt(t))}</div>`:"")(trend(r))}
   ${(v=>v?`<div class="trend">🚀 近 ${v.days} 天評論 ${v.d>=0?"+":""}${v.d.toLocaleString()} 則（約每週 +${v.wk}，成長 ${(v.rel*100).toFixed(1)}%）${v.hot?"・短線爆紅":""}</div>`:"")(viral(r))}
   ${r.verdict?`<p class="verdict">${esc(r.verdict)}</p>`:""}
   ${r.price?`<div class="price">${esc(r.price)}</div>`:""}
   ${(r.signature||[]).length?`<div class="sig"><span>招牌　</span>${esc(r.signature.join("、"))}</div>`:""}
-  ${(r.my_rating||r.my_note)?`<div class="mine">${r.my_rating?`我的評分 ${esc(r.my_rating)}／5　`:""}${esc(r.my_note||"")}</div>`:""}
+  ${mineHtml(r)}${(canWrite&&(r.my_rating||r.my_note))?`<div class="mine">${r.my_rating?`我的評分 ${esc(r.my_rating)}／5　`:""}${esc(r.my_note||"")}</div>`:""}
   <div class="pc"><div class="p"><h4>優點</h4><ul>${li(r.pros)}</ul></div><div class="c"><h4>缺點</h4><ul>${li(r.cons)}</ul></div></div>
   <div class="kv">${alt.length?`<div><span>其他平台評分　</span>${alt.map(a=>`<a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.platform)} ${Number(a.rating).toFixed(1)}${a.count!=null?"（"+a.count+" 則）":""}</a>`).join("、")}</div>`:""}${r.sponsor_note?`<div><span>業配判斷　</span>${esc(r.sponsor_note)}</div>`:""}${r.address?`<div><span>地址　</span>${esc(r.address)}</div>`:""}${r.notes?`<div><span>備註　</span>${esc(r.notes)}</div>`:""}</div>
   ${(r.sources||[]).length?`<div class="src kv"><span>來源</span><ul>${r.sources.map(s=>`<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title||s.url)}</a></li>`).join("")}</ul></div>`:""}
@@ -906,6 +959,7 @@ async function openDet(id){const r=items.find(x=>x._id===id);if(!r)return;detId=
   if(!r._dl){$("#detBody").innerHTML='<p style="padding:20px">讀取中…</p>';if(!det.open)det.showModal();await loadDet(r);if(detId!==id)return}
   $("#detBody").innerHTML=detail(r);$("#detClose").onclick=()=>det.close();if(!det.open)det.showModal()}
 det.addEventListener("close",()=>{detId=null});
+det.addEventListener("input",e=>{const t=e.target.closest("[data-mt]");if(!t)return;const id=t.dataset.mt,m=MINE[id]||(MINE[id]={});m.t=t.value;const r=items.find(x=>x._id===id);if(r)r.my_note=t.value;saveMine()});
 det.addEventListener("click",e=>{if(e.target===det){det.close();return}handleAct(e)});
 
 async function handleAct(e){
@@ -915,7 +969,11 @@ async function handleAct(e){
   if(ed)openEd(items.find(x=>x._id===ed.dataset.edit));
   const pb=e.target.closest("[data-ph]");if(pb)openPh(items.find(x=>x._id===pb.dataset.ph));
   const vw=e.target.closest("[data-view]");if(vw){e.preventDefault();const[rid,pid]=vw.dataset.view.split("|");openLb(rid,pid)}
-  return !!(v||ed||pb||vw);
+  const mv=e.target.closest("[data-mv]"),ms=e.target.closest("[data-ms]");
+  if(mv||ms){const id=(mv?mv.dataset.mv:ms.dataset.ms.split("|")[0]),r=items.find(x=>x._id===id);if(r){const m=MINE[id]||(MINE[id]={});
+    if(mv)m.v=!r.visited;else{const n=+ms.dataset.ms.split("|")[1];m.s=m.s===n?0:n;if(m.s)m.v=true}
+    applyMine(r);r._bdK=null;saveMine();if(detId===id){const sy=$("#detBody").scrollTop;$("#detBody").innerHTML=detail(r);$("#detClose").onclick=()=>det.close();$("#detBody").scrollTop=sy}render()}}
+  return !!(v||ed||pb||vw||mv||ms);
 }
 $("#list").addEventListener("click",async e=>{
   if(e.target.closest("a,button,input,select,summary"))return handleAct(e);
@@ -1099,7 +1157,7 @@ render();
   try{
     const res=await fetch("data/index.json");const js=await res.json();
     items=js.items.map(r=>{if(r.category!=="鐵板燒"&&(TPY.test(r.name||"")||/鐵板/.test(r.google_category||"")))r.category="鐵板燒";return r});
-    itemsVer++;itemsLoaded=true;$("#built").textContent=js.built||"";render();
+    items.forEach(applyMine);itemsVer++;itemsLoaded=true;$("#built").textContent=js.built||"";render();
   }catch(e){$("#count").textContent="資料讀取失敗，請重新整理。"}
 })();
 
