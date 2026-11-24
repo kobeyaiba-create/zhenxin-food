@@ -583,11 +583,11 @@ body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
 const $=s=>document.querySelector(s);
 const BASE_CATS=["拉麵","日式料理","排餐","鐵板燒","火鍋","韓式","炒飯","中式","海鮮","台式小吃","西式"];
 const BASE_CUI=["日式","台式","韓式","中式","港式","美式","義式","泰式"];
-const DISHES=["牛肉麵","拌麵","滷肉飯","肉羹麵","肉圓","炒飯","擔仔麵","米糕","鍋燒意麵","餛飩","水餃","小籠包","鴨肉飯","雞肉飯","豬腳","臭豆腐","粄條","米粉","擀麵","鰻魚飯","丼飯","咖哩","壽司","牛排","燒肉","羊肉爐","麻辣鍋","烤鴨","港式點心","炸雞","水煎包","碗粿","蚵仔煎"];
+const DISHES=["牛肉麵","日式拉麵","拌麵","滷肉飯","肉羹麵","肉圓","炒飯","擔仔麵","米糕","鍋燒意麵","餛飩","水餃","小籠包","鴨肉飯","雞肉飯","豬腳","臭豆腐","粄條","米粉","擀麵","鰻魚飯","丼飯","咖哩","壽司","牛排","燒肉","羊肉爐","麻辣鍋","烤鴨","港式點心","炸雞","水煎包","碗粿","蚵仔煎"];
 const DISH_SYN={"滷肉飯":["滷肉飯","魯肉飯","肉燥飯"],"肉羹麵":["肉羹","肉焿","肉庚"],"小籠包":["小籠包","湯包"],"擀麵":["擀麵","桿麵"],"港式點心":["港點","港式點心","飲茶","燒賣","蝦餃"],"鴨肉飯":["鴨肉飯","鴨肉麵","鴨肉冬粉"],"粄條":["粄條","板條"],"麻辣鍋":["麻辣鍋","麻辣火鍋"],"丼飯":["丼"],"燒肉":["燒肉","燒烤"],"水餃":["水餃","餃子"],"米糕":["米糕","筒仔米糕"],"雞肉飯":["雞肉飯","火雞肉飯"],"咖哩":["咖哩","咖喱"],"拌麵":["拌麵","伴麵","乾麵","乾拌麵","撈麵"],"牛肉麵":["牛肉麵","牛肉湯麵","牛肉拌麵"]};
 let customDishes=[];
 const dishText=r=>(r._dt??=[r.name,r.verdict,r.notes,r.mk,...(r.signature||[]),...(r.pros||[]),...(r.menu||[]).flatMap(s=>[s.section,...(s.items||[]).map(i=>i.name)])].join(" "));
-const hasDish=(r,d)=>{const m=(r._hd??={});if(d in m)return m[d];const t=dishText(r);return m[d]=(DISH_SYN[d]||[d]).some(k=>t.includes(k))};
+const hasDish=(r,d)=>{const m=(r._hd??={});if(d in m)return m[d];const t=dishText(r);if(d==="日式拉麵")return m[d]=r.category==="拉麵"||/ラーメン|らーめん|つけ麺|沾麵|豚骨拉麵|雞白湯拉麵|味噌拉麵|醬油拉麵/.test(t);return m[d]=(DISH_SYN[d]||[d]).some(k=>t.includes(k))};
 let shown=60,lastSig="",itemsVer=0,dishCache={k:""};
 let items=[], db=null, assets=null, canWrite=false, editing=null, phTarget=null;
 const imgQ=(r,dish)=>"https://www.google.com/search?tbm=isch&q="+encodeURIComponent([r.name.replace(/\s+[^\s]*店$/,""),dish||"台中"].join(" "));
