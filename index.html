@@ -748,7 +748,7 @@ function render(){lastRender=Date.now();
   renderDish(base);
   chips($("#fZone"),[["","全部"],["viral","🚀 短線爆紅",base.filter(r=>viral(r)?.hot).length],["fresh","🆕 新開特色店",base.filter(r=>r.fresh).length],["mich","⭐ 米其林 2026",base.filter(r=>r.michelin).length],["b500","500碗 2026",base.filter(r=>r.award_500).length]],"zone");
   chips($("#fMeal"),[["","🕐 全時段"],...MEALS.map(([k,l])=>[k,l,base.filter(r=>meal(r,k)).length])],"meal");
-  chips($("#fCat"),[["","🍴 全部",base.length],...cats.map(c=>[c,(EMO[c]||"🍴")+" "+c,cnt(base,"category",c)])],"cat");
+  chips($("#fCat"),[["","🍴 全部",base.length],...cats.map(c=>[c,(EMO[c]||"🍴")+" "+(c==="拉麵"?"日式拉麵":c),cnt(base,"category",c)])],"cat");
   const cuis=uniq([...BASE_CUI.filter(c=>base.some(r=>r.cuisine===c)),...base.map(r=>r.cuisine)]);
   chips($("#fCui"),[["","全部"],...cuis.map(c=>[c,c,cnt(base,"cuisine",c)])],"cui");
   chips($("#fSvc"),[["","全部"],["單點","單點",cnt(base,"service","單點")],["吃到飽","吃到飽",cnt(base,"service","吃到飽")]],"svc");
