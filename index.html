@@ -306,6 +306,7 @@ h1,.c-name,.t-stat b,.det-in .c-name{font-family:var(--display);font-weight:400;
 .myrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.myrow .btn.on{background:var(--accent);color:#fff}
 .stars button{border:0;background:none;font-size:26px;line-height:1;padding:0 2px;color:#d7d1c7;cursor:pointer}.stars button.on{color:#f5a623}
 .mybox textarea{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid #ddd5c8;padding:8px;font:inherit;resize:vertical}
+.catstrip.meal{padding-top:0}
 .trend{font-size:13px;padding:8px 12px;border-radius:12px;background:var(--bg)}
 .trend.good{background:var(--ok-soft);color:var(--ok)}.trend.bad{background:var(--bad-soft);color:var(--bad)}
 .bd.viral{background:linear-gradient(90deg,#ff5a3c,#ff7aa8);color:#fff}
@@ -446,6 +447,7 @@ body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
       <button type="button" class="btn fbtn" id="fMore">🎛️ 篩選<span id="fCnt"></span></button>
     </div>
     <div class="catstrip" id="fCat"></div>
+    <div class="catstrip meal" id="fMeal"></div>
   </section>
   <dialog id="fdlg"><div class="fd-in">
     <div class="fd-h"><h2>🎛️ 篩選</h2><button type="button" class="btn" id="fdClose">完成</button></div>
@@ -742,6 +744,7 @@ function render(){lastRender=Date.now();
   const cats=uniq([...BASE_CATS,...items.map(r=>r.category)]);
   renderDish(base);
   chips($("#fZone"),[["","全部"],["viral","🚀 短線爆紅",base.filter(r=>viral(r)?.hot).length],["fresh","🆕 新開特色店",base.filter(r=>r.fresh).length],["mich","⭐ 米其林 2026",base.filter(r=>r.michelin).length],["b500","500碗 2026",base.filter(r=>r.award_500).length]],"zone");
+  chips($("#fMeal"),[["","🕐 全時段"],...MEALS.map(([k,l])=>[k,l,base.filter(r=>meal(r,k)).length])],"meal");
   chips($("#fCat"),[["","🍴 全部",base.length],...cats.map(c=>[c,(EMO[c]||"🍴")+" "+c,cnt(base,"category",c)])],"cat");
   const cuis=uniq([...BASE_CUI.filter(c=>base.some(r=>r.cuisine===c)),...base.map(r=>r.cuisine)]);
   chips($("#fCui"),[["","全部"],...cuis.map(c=>[c,c,cnt(base,"cuisine",c)])],"cui");
@@ -752,7 +755,7 @@ function render(){lastRender=Date.now();
   $("#cuiList").innerHTML=uniq([...BASE_CUI,...items.map(r=>r.cuisine)]).map(c=>`<option value="${esc(c)}">`).join("");
 
   const q=F.q.trim().toLowerCase();const QV=q?qVariants(q):[];
-  let rows=base.filter(r=>(F.zone!=="b500"||r.award_500)&&(F.zone!=="viral"||viral(r)?.hot)&&(F.zone!=="mich"||r.michelin)&&(F.zone!=="fresh"||r.fresh)&&(!F.dish||hasDish(r,F.dish))&&(!F.cat||r.category===F.cat)&&(!F.cui||r.cuisine===F.cui)&&(!F.svc||r.service===F.svc)&&(!F.low||r.sponsor_risk==="低")&&(!F.visited||r.visited)&&(!F.noChain||!isChain(r))&&(!F.veg||isVeg(r))&&(!F.noClosed||!closedWarn(r))&&(!F.today||status(r).today===true)&&(!F.now||status(r).open)
+  let rows=base.filter(r=>(F.zone!=="b500"||r.award_500)&&(F.zone!=="viral"||viral(r)?.hot)&&(F.zone!=="mich"||r.michelin)&&(F.zone!=="fresh"||r.fresh)&&(!F.dish||hasDish(r,F.dish))&&(!F.cat||r.category===F.cat)&&(!F.cui||r.cuisine===F.cui)&&(!F.svc||r.service===F.svc)&&(!F.low||r.sponsor_risk==="低")&&(!F.visited||r.visited)&&(!F.noChain||!isChain(r))&&(!F.veg||isVeg(r))&&(!F.meal||meal(r,F.meal))&&(!F.noClosed||!closedWarn(r))&&(!F.today||status(r).today===true)&&(!F.now||status(r).open)
     &&(!q||(t=>QV.some(v=>t.includes(v)))(r._q??=[r.name,r.address,r.mk,r.verdict,...(r.signature||[]),...(r.menu||[]).flatMap(s=>(s.items||[]).map(i=>i.name))].join(" ").toLowerCase())));
   const altR=x=>{const a=(x.alt_ratings||[]).find(a=>a.rating!=null);return a?a.rating/10-1:-2};
   const s={rating:(a,b)=>(b.google_rating??altR(b))-(a.google_rating??altR(a))||(b.review_count??0)-(a.review_count??0),
@@ -763,7 +766,7 @@ function render(){lastRender=Date.now();
   $("#stMatch").textContent=rows.length.toLocaleString();$("#stAll").textContent=`${F.city}${F.dist?"・"+F.dist:""}・共 ${items.length.toLocaleString()} 家`;
   $("#stOpen").textContent=base.filter(r=>status(r).open).length.toLocaleString();$("#stOpenTxt").textContent=F.now?"✓ 已篩選・點我取消":"點我只看營業中";$("#stOpenBtn").classList.toggle("on",!!F.now);
   $("#stViral").textContent=base.filter(r=>viral(r)?.hot).length.toLocaleString();$("#stViralTxt").textContent=F.zone==="viral"?"✓ 已篩選・點我取消":"點我看爆紅店";$("#stViralBtn").classList.toggle("on",F.zone==="viral");
-  const fc=[F.zone,F.dish,F.cui,F.svc,F.low,F.noChain,F.veg,F.noClosed,F.visited,F.today,F.now].filter(Boolean).length;$("#fCnt").textContent=fc?" "+fc:"";$("#fMore").classList.toggle("on",fc>0);
+  const fc=[F.zone,F.meal,F.dish,F.cui,F.svc,F.low,F.noChain,F.veg,F.noClosed,F.visited,F.today,F.now].filter(Boolean).length;$("#fCnt").textContent=fc?" "+fc:"";$("#fMore").classList.toggle("on",fc>0);
   const zb=$("#zoneBanner");zb.hidden=F.zone!=="b500";$("#viralBanner").hidden=F.zone!=="viral";$("#michBanner").hidden=F.zone!=="mich";$("#freshBanner").hidden=F.zone!=="fresh";
   if(!zb.hidden){const NOTE={"台中市":"台中共 33 家入選：3 碗 1 家、2 碗 2 家、1 碗 30 家（藍山牛肉麵已歇業，未列出）。","新竹市":"新竹（市＋縣）共 18 家入選，全部為 1 碗；新竹市的「無名麵店」因無法確認是哪一家，暫未列出。","苗栗縣":"苗栗共 15 家入選：2 碗 1 家（北苗二家合）、1 碗 14 家。","新竹縣":"新竹（市＋縣）共 18 家入選，全部為 1 碗；新竹市的「無名麵店」因無法確認是哪一家，暫未列出。"};
     const b5=inCity.filter(r=>r.award_500);$("#zoneStat").textContent=(NOTE[F.city]||"")+`目前${F.city}列出 ${b5.length} 家。`;}
@@ -784,6 +787,15 @@ function tpeNow0(){
   const p=Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Taipei",weekday:"short",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date()).map(x=>[x.type,x.value]));
   return {d:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(p.weekday),m:(+p.hour%24)*60+ +p.minute};
 }
+const MEALS=[["bf","🍳 早餐"],["brunch","🥞 早午餐"],["dinner","🌆 晚餐"],["late","🌙 宵夜"]];
+function mealSegs(r){if(r._ms)return r._ms;const h=r.hours||{};return r._ms=WD.flatMap(k=>segs(h[k]))}
+function meal(r,k){
+  const t=[r.name,r.google_category,r.category].join(" "),S=mealSegs(r);
+  if(k==="bf")return /早餐|豆漿|蛋餅|飯糰/.test(t)||S.some(([a])=>a>=240&&a<=8*60);
+  if(k==="brunch")return r.category==="早午餐"||/早午餐|brunch/i.test(t)||S.some(([a,b])=>a>=360&&a<=10*60+30&&b>=12*60&&b<=17*60);
+  if(k==="dinner")return S.some(([a,b])=>a<=18*60&&b>=19*60+30);
+  if(k==="late")return /宵夜|深夜/.test(t)||S.some(([a,b])=>b>=23*60+30);
+  return true}
 function segs(s){
   if(!s||/公休|休息/.test(s))return [];
   const out=[],re=/(\d{1,2}):(\d{2})\s*[-–~～]\s*(\d{1,2}):(\d{2})/g;let x;
@@ -995,7 +1007,7 @@ $("#moreBtn").onclick=()=>{shown+=60;render()};
 $("#stOpenBtn").onclick=()=>{F.now=!F.now;saveF();render()};
 $("#stViralBtn").onclick=()=>{F.zone=F.zone==="viral"?"":"viral";saveF();render()};
 const fdlg=$("#fdlg");$("#fMore").onclick=()=>fdlg.showModal();$("#fdClose").onclick=()=>fdlg.close();fdlg.addEventListener("click",e=>{if(e.target===fdlg)fdlg.close()});
-$("#fReset").onclick=()=>{Object.assign(F,{zone:"",dish:"",cui:"",svc:"",low:false,noChain:false,veg:false,noClosed:false,visited:false,today:false,now:false,cat:""});saveF();render()};
+$("#fReset").onclick=()=>{Object.assign(F,{zone:"",dish:"",cui:"",svc:"",low:false,noChain:false,veg:false,meal:"",noClosed:false,visited:false,today:false,now:false,cat:""});saveF();render()};
 
 /* ---- photos ---- */
 const phDlg=$("#phDlg"), lb=$("#lb");
