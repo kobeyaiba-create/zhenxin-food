@@ -724,7 +724,7 @@ function zx(r){
   if((String(r.name).match(/[｜|／\/]/g)||[]).length>=2){parts.push(["行銷味","店名塞滿關鍵字",-4]);sc-=4}
   if(R>=4.8&&v<300){parts.push(["假高分風險","高分但評論數少",-6]);sc-=6}
   if(/打卡|送.{0,4}(小菜|飲料|甜點|招待)|五星.{0,4}(送|折)|好評.{0,3}(送|折)/.test([r.verdict,r.sponsor_note,...(r.cons||[])].join(" "))){parts.push(["假高分風險","有打卡／好評送",-8]);sc-=8}
-  if(isCheapFav(r))parts.push(["便宜加持",((r.verdict||"").match(CHEAP_RE)||[""])[0]+"：高分可能有一部分是因為便宜、份量大，不一定是風味特別",0]);
+  if(isCheapFav(r)){parts.push(["便宜加持",((r.verdict||"").match(CHEAP_RE)||[""])[0]+"：高分有一部分是因為便宜、份量大，不一定是風味特別",-5]);sc-=5}
   const n=Math.round(Math.max(1,Math.min(99,sc*.82+6)));
   const g=n>=70?"必吃":n>=60?"很推":n>=50?"不錯":"普通";
   return r._zx={n,g,polar,parts};
