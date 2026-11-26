@@ -307,6 +307,7 @@ h1,.c-name,.t-stat b,.det-in .c-name{font-family:var(--display);font-weight:400;
 .stars button{border:0;background:none;font-size:26px;line-height:1;padding:0 2px;color:#d7d1c7;cursor:pointer}.stars button.on{color:#f5a623}
 .mybox textarea{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid #ddd5c8;padding:8px;font:inherit;resize:vertical}
 .catstrip.meal{padding-top:0}
+.bd.cheap{background:#fff4d6;color:#8a5a00}
 .trend{font-size:13px;padding:8px 12px;border-radius:12px;background:var(--bg)}
 .trend.good{background:var(--ok-soft);color:var(--ok)}.trend.bad{background:var(--bad-soft);color:var(--bad)}
 .bd.viral{background:linear-gradient(90deg,#ff5a3c,#ff7aa8);color:#fff}
@@ -681,6 +682,8 @@ function qVariants(q){const out=new Set([q]);for(const [a,b] of QSWAP)if(q.inclu
   for(const [k,v] of Object.entries(DISH_SYN))if(q===k.toLowerCase()||v.some(x=>x.toLowerCase()===q))v.forEach(x=>out.add(x.toLowerCase()));return [...out]}
 const VEG_G=/素食|純素|蔬食|vegetarian|vegan/i,VEG_N=/素食|蔬食|全素|蛋奶素|五辛素|素料理|素麵|素滷味|素火鍋|素便當|植物肉|純植/;
 function isVeg(r){return VEG_G.test(r.google_category||"")||VEG_G.test(r.cuisine||"")||VEG_N.test(r.name||"")}
+const CHEAP_RE=/CP值|cp值|便宜|銅板|俗又大碗|佛心|划算|價格親民|平價|份量大|份量足|大份量|超大份/;
+const isCheapFav=r=>(r.google_rating||0)>=4.4&&CHEAP_RE.test(r.verdict||"");
 const FLAVOR_RE=/螃蟹|蟹膏|龍蝦|海老|蝦湯|甜蝦|鴨清湯|鴨湯|鴨白湯|番茄|煮干|魚介|昆布水|蛤蜊|干貝|帆立|鯛|松露|柚子|藥膳|花膠|墨魚|海膽|竹笙|酒粕|煙燻|燻製|山椒|青花椒|酸湯|椰|南洋|叻沙/g;
 const UNIQ_RE=/獨特|獨家|獨門|特色|招牌|創意|秘製|祕製|自製|手工|手作|限量|老店|傳承|古早|職人|主廚|無菜單|私房|在地|現做|現煮|現包|現炸|自家|老字號|排隊/g;
 let chainCntFor=-1,chainCnt=null,sigDfFor=-1,sigDf=null;
@@ -721,6 +724,7 @@ function zx(r){
   if((String(r.name).match(/[｜|／\/]/g)||[]).length>=2){parts.push(["行銷味","店名塞滿關鍵字",-4]);sc-=4}
   if(R>=4.8&&v<300){parts.push(["假高分風險","高分但評論數少",-6]);sc-=6}
   if(/打卡|送.{0,4}(小菜|飲料|甜點|招待)|五星.{0,4}(送|折)|好評.{0,3}(送|折)/.test([r.verdict,r.sponsor_note,...(r.cons||[])].join(" "))){parts.push(["假高分風險","有打卡／好評送",-8]);sc-=8}
+  if(isCheapFav(r))parts.push(["便宜加持",((r.verdict||"").match(CHEAP_RE)||[""])[0]+"：高分可能有一部分是因為便宜、份量大，不一定是風味特別",0]);
   const n=Math.round(Math.max(1,Math.min(99,sc*.82+6)));
   const g=n>=70?"必吃":n>=60?"很推":n>=50?"不錯":"普通";
   return r._zx={n,g,polar,parts};
@@ -728,7 +732,7 @@ function zx(r){
 const ZXC=n=>n>=70?"z1":n>=60?"z2":n>=50?"z3":"z4";
 function zxHtml(r){const z=zx(r);if(!z)return "";
   return `<div class="zx"><div class="zxh"><span class="zxn ${ZXC(z.n)}">${z.n}</span><div><b>真心指數・${z.g}</b><small>評分可信度、星等分布、近期趨勢、特色感、連鎖與業配風險</small></div></div>
-  <ul>${z.parts.map(([k,t,d])=>`<li><span>${esc(k)}</span><span>${esc(t)}</span><b class="${d>0?"p":d<0?"m":""}">${k==="評分可信度"?d:(d>0?"+":"")+d}</b></li>`).join("")}</ul>
+  <ul>${z.parts.map(([k,t,d])=>`<li><span>${esc(k)}</span><span>${esc(t)}</span><b class="${d>0?"p":d<0?"m":""}">${k==="評分可信度"?d:d===0?"註":(d>0?"+":"")+d}</b></li>`).join("")}</ul>
   ${z.polar?`<p class="zxw">⚠️ 評價兩極：喜歡的人很愛、踩雷的人也不少，看看負評在罵什麼再決定。</p>`:""}</div>`}
 /* 我的口味筆記（存在這支手機） */
 let MINE={};try{MINE=JSON.parse(localStorage.getItem("mine")||"{}")||{}}catch(e){MINE={}}
@@ -921,7 +925,7 @@ function badges(r){
   if(r._bd&&r._bdK===_nowT)return r._bd;
   const b=[],rc=r.review_count||0,g=r.google_rating||0;
   const cw=closedWarn(r);if(cw)b.push(["closed","⚠️ "+cw+"？出發前確認"]);
-  const z=zx(r);if(z)b.push(["zx "+ZXC(z.n),`🎯 真心 ${z.n}・${z.g}`]);if(z&&z.polar)b.push(["down","⚖️ 評價兩極"]);
+  const z=zx(r);if(z)b.push(["zx "+ZXC(z.n),`🎯 真心 ${z.n}・${z.g}`]);if(z&&z.polar)b.push(["down","⚖️ 評價兩極"]);if(isCheapFav(r))b.push(["cheap","💰 便宜加持"]);
   if(r.fresh==="new")b.push(["fresh","🆕 新開"]);else if(r.fresh==="special")b.push(["fresh","✨ 特色小店"]);
   const tr=trend(r);
   if(tr&&!tr.wait&&tr.kind==="good")b.push(["up",`👍 ${tr.realDays>=30?"近月":"近期"}好評多 +${tr.good}`]);
