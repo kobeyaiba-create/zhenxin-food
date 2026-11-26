@@ -746,13 +746,15 @@ function mineHtml(r){if(canWrite)return "";const m=MINE[r._id]||{};
 function render(){lastRender=Date.now();
   const cities=uniq(["台中市",...items.map(r=>r.city)]);
   if(!items.length){$("#count").textContent="載入中…";return}
-  if(!cities.includes(F.city))F.city=cities[0];
-  sel($("#fCity"),cities.map(c=>[c,c]),F.city);
-  const inCity=items.filter(r=>r.city===F.city);
-  const dists=uniq(inCity.map(r=>r.district)).sort();
+  const ALL=F.city==="全部";
+  if(!ALL&&!cities.includes(F.city))F.city=cities[0];
+  sel($("#fCity"),[["全部","全部縣市"],...cities.map(c=>[c,c])],F.city);
+  const inCity=ALL?items:items.filter(r=>r.city===F.city);
+  const dk=r=>ALL?r.city+"|"+r.district:r.district;
+  const dists=ALL?cities.flatMap(c=>uniq(items.filter(r=>r.city===c).map(r=>c+"|"+r.district)).sort()):uniq(inCity.map(r=>r.district)).sort();
   if(F.dist&&!dists.includes(F.dist))F.dist="";
-  sel($("#fDist"),[["","全部區域"],...dists.map(d=>[d,d])],F.dist);
-  const base=inCity.filter(r=>!F.dist||r.district===F.dist);
+  sel($("#fDist"),[["","全部區域"],...dists.map(d=>[d,d.replace("|"," ")])],F.dist);
+  const base=inCity.filter(r=>!F.dist||dk(r)===F.dist);
   const cnt=(arr,k,v)=>arr.filter(r=>r[k]===v).length;
   const cats=uniq([...BASE_CATS,...items.map(r=>r.category)]);
   renderDish(base);
@@ -774,15 +776,15 @@ function render(){lastRender=Date.now();
   const s={rating:(a,b)=>(b.google_rating??altR(b))-(a.google_rating??altR(a))||(b.review_count??0)-(a.review_count??0),
     reviews:(a,b)=>(b.review_count??-1)-(a.review_count??-1),zx:(a,b)=>(zx(b)?.n??-1)-(zx(a)?.n??-1)||(b.review_count??0)-(a.review_count??0),priceLo:(a,b)=>priceLo(a.price)-priceLo(b.price),name:(a,b)=>a.name.localeCompare(b.name,"zh-Hant")}[F.sort];
   rows.sort(F.zone==="b500"?(a,b)=>(b.award_500?.bowls||0)-(a.award_500?.bowls||0)||s(a,b):F.zone==="viral"?(a,b)=>viral(b).score-viral(a).score:F.zone==="mich"?(a,b)=>(MT[b.michelin?.t]||0)-(MT[a.michelin?.t]||0)||s(a,b):s);
-  $("#count").textContent=`${F.city}${F.dist?"・"+F.dist:""}：符合 ${rows.length} 家（共 ${items.length} 家）`;
+  $("#count").textContent=`${F.city==="全部"?"全部縣市":F.city}${F.dist?"・"+F.dist.replace("|"," "):""}：符合 ${rows.length} 家（共 ${items.length} 家）`;
   const sig=JSON.stringify(F);
-  $("#stMatch").textContent=rows.length.toLocaleString();$("#stAll").textContent=`${F.city}${F.dist?"・"+F.dist:""}・共 ${items.length.toLocaleString()} 家`;
+  $("#stMatch").textContent=rows.length.toLocaleString();$("#stAll").textContent=`${F.city==="全部"?"全部縣市":F.city}${F.dist?"・"+F.dist.replace("|"," "):""}・共 ${items.length.toLocaleString()} 家`;
   $("#stOpen").textContent=base.filter(r=>status(r).open).length.toLocaleString();$("#stOpenTxt").textContent=F.now?"✓ 已篩選・點我取消":"點我只看營業中";$("#stOpenBtn").classList.toggle("on",!!F.now);
   $("#stViral").textContent=base.filter(r=>viral(r)?.hot).length.toLocaleString();$("#stViralTxt").textContent=F.zone==="viral"?"✓ 已篩選・點我取消":"點我看爆紅店";$("#stViralBtn").classList.toggle("on",F.zone==="viral");
   const fc=[F.zone,F.meal,F.dish,F.cui,F.svc,F.low,F.noChain,F.veg,F.noClosed,F.visited,F.today,F.now].filter(Boolean).length;$("#fCnt").textContent=fc?" "+fc:"";$("#fMore").classList.toggle("on",fc>0);
   const zb=$("#zoneBanner");zb.hidden=F.zone!=="b500";$("#viralBanner").hidden=F.zone!=="viral";$("#michBanner").hidden=F.zone!=="mich";$("#freshBanner").hidden=F.zone!=="fresh";
   if(!zb.hidden){const NOTE={"台中市":"台中共 33 家入選：3 碗 1 家、2 碗 2 家、1 碗 30 家（藍山牛肉麵已歇業，未列出）。","新竹市":"新竹（市＋縣）共 18 家入選，全部為 1 碗；新竹市的「無名麵店」因無法確認是哪一家，暫未列出。","苗栗縣":"苗栗共 15 家入選：2 碗 1 家（北苗二家合）、1 碗 14 家。","新竹縣":"新竹（市＋縣）共 18 家入選，全部為 1 碗；新竹市的「無名麵店」因無法確認是哪一家，暫未列出。"};
-    const b5=inCity.filter(r=>r.award_500);$("#zoneStat").textContent=(NOTE[F.city]||"")+`目前${F.city}列出 ${b5.length} 家。`;}
+    const b5=inCity.filter(r=>r.award_500);$("#zoneStat").textContent=(NOTE[F.city]||"")+`目前${F.city==="全部"?"全部縣市":F.city}列出 ${b5.length} 家。`;}
   const L=$("#list");
   if(!items.length){L.innerHTML=`<div class="empty"><h2>還沒有店家</h2><p>資料讀取中，請稍候。</p></div>`;return}
   if(!rows.length){$("#moreBtn").hidden=true;L.innerHTML=`<div class="empty"><h2>沒有符合的店家</h2><p>試著放寬篩選條件，或新增一家。</p></div>`;return}
@@ -953,7 +955,7 @@ function card(r){
   ${coverHtml(r,big)}
   <div class="cb">
     <h3 class="c-name">${esc(r.name)}</h3>
-    <div class="where"><span>📍 ${esc(r.district)}</span>${r.price&&priceLo(r.price)<1e9?`<span>💵 ${esc(r.price)}</span>`:""}<span class="open ${st.cls}">${st.txt}</span></div>
+    <div class="where"><span>📍 ${F.city==="全部"?esc(r.city.replace(/[市縣]$/,""))+" ":""}${esc(r.district)}</span>${r.price&&priceLo(r.price)<1e9?`<span>💵 ${esc(r.price)}</span>`:""}<span class="open ${st.cls}">${st.txt}</span></div>
     ${bd.length?`<div class="bdg">${bd.slice(0,big?5:3).map(([c,t])=>`<span class="bd ${c}">${t}</span>`).join("")}</div>`:""}
     ${r.verdict?`<p class="verdict q">${esc(r.verdict)}</p>`:""}
     ${(r.signature||[]).length?`<div class="hash">${r.signature.slice(0,big?5:3).map(x=>`<span>#${esc(x)}</span>`).join("")}</div>`:""}
@@ -1077,7 +1079,7 @@ const HIDS=WD.map(k=>"h_"+k);
 const ids=[...HIDS,"closed","hoursNote","name","city","district","category","cuisine","service","price","rating","reviews","risk","sig","riskNote","verdict","pros","cons","address","phone","notes","sources","menu","menuNote","menuUpd","my","myNote"];
 function openEd(r){
   editing=r||null;$("#edTitle").textContent=r?"編輯店家":"新增店家";$("#edErr").hidden=true;
-  const v={name:r?.name,city:r?.city||F.city,district:r?.district||F.dist,category:r?.category||F.cat,cuisine:r?.cuisine||F.cui,service:r?.service||F.svc||"單點",price:r?.price,
+  const v={name:r?.name,city:r?.city||(F.city==="全部"?"台中市":F.city),district:r?.district||(F.city==="全部"?"":F.dist),category:r?.category||F.cat,cuisine:r?.cuisine||F.cui,service:r?.service||F.svc||"單點",price:r?.price,
     rating:r?.google_rating??"",reviews:r?.review_count??"",risk:r?.sponsor_risk||"低",sig:(r?.signature||[]).join("、"),riskNote:r?.sponsor_note,verdict:r?.verdict,
     pros:(r?.pros||[]).join("\n"),cons:(r?.cons||[]).join("\n"),address:r?.address,phone:r?.phone,notes:r?.notes,sources:(r?.sources||[]).map(s=>`${s.title} | ${s.url}`).join("\n"),menu:menuToText(r?.menu),closed:r?.closed_days,hoursNote:r?.hours_note,...Object.fromEntries(WD.map(k=>["h_"+k,r?.hours?.[k]??""])),menuNote:r?.menu_note,menuUpd:r?.menu_updated,my:r?.my_rating??"",myNote:r?.my_note};
   ids.forEach(k=>$("#e_"+k).value=v[k]??"");$("#e_visited").checked=!!r?.visited;
